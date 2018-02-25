@@ -116,7 +116,18 @@ class TableController extends Controller
             }
             if ($this->check_false_array($column_index) === FALSE) {
                 $i = 0;
-                $columns_table = Column::where('tabel_id', $id)->get();
+                if ($order != null) {
+                    $index_order = array_search($func($order), array_map($func,$header));
+                    if ($index_order === FALSE) {
+                        return "Error";
+                    }
+                    else{
+                        $columns_table = Column::where('tabel_id', $id)->orderBy('body.'.$index_order, $order_type)->get();
+                    }
+                }
+                else{
+                    $columns_table = Column::where('tabel_id', $id)->get();
+                }
                 foreach ($columns_table as $column) {
                     foreach ($column_index as $col_index) {
                         $columns[$i][] = $column['body'][$col_index];
