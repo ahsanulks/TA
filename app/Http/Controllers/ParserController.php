@@ -88,15 +88,18 @@ class ParserController extends Controller
       if ($flags['querytype'] == "SELECT") {
         $from = $parser->statements[0]->from[0]->table;
         $expression = $parser->statements[0]->expr;
-        $where = $parser->statements[0]->where[0]->expr;
         $table = Url::find($req->id)->tables->where('name',$from)->first();
         foreach ($expression as $column) {
           $select[] = $column->expr;
         }
         $data['select'] = $select;
         $data['from'] = $from;
-        if ($where != null) {
-          $data['where'] = $where;
+        if ($parser->statements[0]->where != null) {
+          $data['where'] = $parser->statements[0]->where[0]->expr;
+        }
+        if ($parser->statements[0]->order != null) {
+          $data['order'] = $parser->statements[0]->order[0]->expr->expr;
+          $data['order_type'] = $parser->statements[0]->order[0]->type;
         }
         return Redirect::to('/table/'.$table->id."?".http_build_query($data));
       }

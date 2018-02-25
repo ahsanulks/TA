@@ -38,11 +38,21 @@ class TableController extends Controller
         if (isset($req->where)) {
             $where = explode(" ", $req->where);
             if (sizeof($where) == 3) {
-                $data['columns'] = $this->get_column($req->select, $id, $table->header, $where);
+                if (isset($req->order)) {
+                    $data['columns'] = $this->get_column($req->select, $id, $table->header, $where, $req->order, $req->order_type);
+                }
+                else{
+                    $data['columns'] = $this->get_column($req->select, $id, $table->header, $where);
+                }
             }
         }
         else{
-            $data['columns'] = $this->get_column($req->select, $id, $table->header);
+            if (isset($req->order)) {
+                $data['columns'] = $this->get_column($req->select, $id, $table->header, null, $req->order, $req->order_type);
+            }
+            else{
+                $data['columns'] = $this->get_column($req->select, $id, $table->header);   
+            }
         }   	
     	return response()->json($data);
     } 
@@ -56,7 +66,7 @@ class TableController extends Controller
     	return false;
     }
 
-    public function get_column($selects, $id, $header, $where = null){
+    public function get_column($selects, $id, $header, $where = null, $order = null, $order_type = null){
         $func = function($value){
                     return strtolower(str_replace(" ", "", $value));
                 };
@@ -67,16 +77,38 @@ class TableController extends Controller
                     return "Error";
                 }
                 else{
-                    $columns_table = Column::where('tabel_id', $id)->where('body.'.$index_where, $where[1], is_numeric($where[2]) ? intval($where[2]) : $where[2])->get();
+                    if ($order != null) {
+                        $index_order = array_search($func($order), array_map($func,$header));
+                        if ($index_order === FALSE) {
+                            return "Error";
+                        }
+                        else{
+                            $columns_table = Column::where('tabel_id', $id)->where('body.'.$index_where, $where[1], is_numeric($where[2]) ? intval($where[2]) : $where[2])->orderBy('body.'.$index_order, $order_type)->get();
+                        }
+                    }
+                    else{
+                        $columns_table = Column::where('tabel_id', $id)->where('body.'.$index_where, $where[1], is_numeric($where[2]) ? intval($where[2]) : $where[2])->get();
+                    }
                 }
             }
             else{
-                $columns_table = Column::where('tabel_id', $id)->get();
+                if ($order != null) {
+                    $index_order = array_search($func($order), array_map($func,$header));
+                    if ($index_order === FALSE) {
+                        return "Error";
+                    }
+                    else{
+                        $columns_table = Column::where('tabel_id', $id)->orderBy('body.'.$index_order, $order_type)->get();
+                    }
+                }
+                else{
+                    $columns_table = Column::where('tabel_id', $id)->get();
+                }
             }
             foreach ($columns_table as $column) {
                 $columns[] = $column['body'];
             }
-            return isset($columns) ? $columns : "No table";
+            return isset($columns) ? $columns : "Table not found";
         }
         else{
             foreach ($selects as $select) {
