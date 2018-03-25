@@ -22,7 +22,8 @@ class ParserController extends Controller
     	$dom = new Dom();
     	$url = Url::firstOrNew(['url' => $req->url]);
       $string_page = $dom->loadFromUrl($req->url)->outerHTML;
-      $tables = $dom->find('table');
+      //must check nilai ttl
+      dd($string_page);
       if ($string_page === $url->string_page) {  
         $url->ttl = 20; //must calculate adaptive TTL
         return Redirect::to('/url/'.$url->id);
@@ -33,6 +34,7 @@ class ParserController extends Controller
       $url->string_page = $string_page;
     	$url->save();
 
+      $tables = $dom->find('table');
     	$j = 1;
         foreach ($tables as $table) {
           $data['url_id'] = $url->id;
