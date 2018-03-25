@@ -22,7 +22,8 @@ class ParserController extends Controller
     	$dom = new Dom();
     	$url = Url::firstOrNew(['url' => $req->url]);
       $string_page = $dom->loadFromUrl($req->url)->outerHTML;
-      $tables = $dom->find('table');
+      //must check nilai ttl
+      dd($string_page);
       if ($string_page === $url->string_page) {  
         $url->ttl = 20; //must calculate adaptive TTL
         return Redirect::to('/url/'.$url->id);
@@ -33,6 +34,7 @@ class ParserController extends Controller
       $url->string_page = $string_page;
     	$url->save();
 
+      $tables = $dom->find('table');
     	$j = 1;
         foreach ($tables as $table) {
           $data['url_id'] = $url->id;
@@ -88,15 +90,18 @@ class ParserController extends Controller
       if ($flags['querytype'] == "SELECT") {
         $from = $parser->statements[0]->from[0]->table;
         $expression = $parser->statements[0]->expr;
-        $where = $parser->statements[0]->where[0]->expr;
         $table = Url::find($req->id)->tables->where('name',$from)->first();
         foreach ($expression as $column) {
           $select[] = $column->expr;
         }
         $data['select'] = $select;
         $data['from'] = $from;
-        if ($where != null) {
-          $data['where'] = $where;
+        if ($parser->statements[0]->where != null) {
+          $data['where'] = $parser->statements[0]->where[0]->expr;
+        }
+        if ($parser->statements[0]->order != null) {
+          $data['order'] = $parser->statements[0]->order[0]->expr->expr;
+          $data['order_type'] = $parser->statements[0]->order[0]->type;
         }
         return Redirect::to('/table/'.$table->id."?".http_build_query($data));
       }
