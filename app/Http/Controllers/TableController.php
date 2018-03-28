@@ -35,7 +35,7 @@ class TableController extends Controller
     	$table = Table::select('name', 'header')->where('_id', $id)->first();
     	unset($table->_id);
     	$data['table'] = $table;
-        if (isset($req->where)) {
+        if (isset($req->where) && sizeof($req->where) == 1) {
             $where = explode(" ", $req->where);
             if (sizeof($where) == 3) {
                 if (isset($req->order)) {
@@ -45,6 +45,9 @@ class TableController extends Controller
                     $data['columns'] = $this->get_column($req->select, $id, $table->header, $where);
                 }
             }
+        }
+        else if (isset($req->where) && sizeof($req->where) > 1){
+            $data['columns'] = $this->get_column_with_complex_where($req->select, $id, $table->header, $req->where);
         }
         else{
             if (isset($req->order)) {
@@ -64,6 +67,10 @@ class TableController extends Controller
     		}
     	}
     	return false;
+    }
+
+    public function get_column_with_complex_where($selects, $id, $header, $where){
+        return Column::where('tabel_id', $id)->get();
     }
 
     public function get_column($selects, $id, $header, $where = null, $order = null, $order_type = null){
