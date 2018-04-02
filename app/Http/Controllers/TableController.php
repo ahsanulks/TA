@@ -24,7 +24,7 @@ class TableController extends Controller
     		$data['tables'][] = $table;
     		$data['column'][$table->id] = $table->columns;
     	}
-    	// Column::where('tabel_id', $table->id)->where('body', 'all', ["2"])->get()
+    	// Column::where('tabel_id', $table->id)->where('body', 'all', ['2'])->get()
     	// dd($data['5a83699020289d115c003a75'][1]['body'][1]);
     	$data['id'] = $id;
     	
@@ -36,7 +36,7 @@ class TableController extends Controller
     	unset($table->_id);
     	$data['table'] = $table;
         if (isset($req->where) && sizeof($req->where) == 1) {
-            $where = explode(" ", $req->where);
+            $where = explode(' ', $req->where);
             if (sizeof($where) == 3) {
                 if (isset($req->order)) {
                     $data['columns'] = $this->get_column($req->select, $id, $table->header, $where, $req->order, $req->order_type);
@@ -70,24 +70,52 @@ class TableController extends Controller
     }
 
     public function get_column_with_complex_where($selects, $id, $header, $where){
+        foreach ($where['arguments'] as $args) {
+            $where_condition[] = explode(' ', $args);
+        }
+        if ($selects[0] == '*') {
+            $where_index = $this->map_arguments($where['identifier'], $header); 
+            if ($this->check_false_array($where_index)) return 'Error';
+            $query = Column::query()->where('tabel_id', $id);
+            $i = 0;
+            //kurang nambahin or atau and
+            foreach ($where_index as $value) {
+                $query->where('body.'.$value, $where_condition[$i][1], is_numeric($where_condition[$i][2]) ? intval($where_condition[$i][2]) : $where_condition[$i][2]);
+                $i++;
+            }
+            dd($query);
+            $result = $query->get();
+            return $result;
+            // Column::where('table_id', $id)->
+        }
         return Column::where('tabel_id', $id)->get();
+    }
+
+    public function map_arguments($where, $header){
+        $func = function($value){
+                    return strtolower(str_replace(' ', '', $value));
+                };       
+        foreach ($where as $w) {
+            $index_where[] = array_search($func($w), array_map($func, $header));
+        }
+        return $index_where;
     }
 
     public function get_column($selects, $id, $header, $where = null, $order = null, $order_type = null){
         $func = function($value){
-                    return strtolower(str_replace(" ", "", $value));
+                    return strtolower(str_replace(' ', '', $value));
                 };
-        if ($selects[0] == "*") {
+        if ($selects[0] == '*') {
             if ($where != null) {
                 $index_where = array_search($func($where[0]), array_map($func,$header));
                 if ($index_where === FALSE) {
-                    return "Error";
+                    return 'Error';
                 }
                 else{
                     if ($order != null) {
                         $index_order = array_search($func($order), array_map($func,$header));
                         if ($index_order === FALSE) {
-                            return "Error";
+                            return 'Error';
                         }
                         else{
                             $columns_table = Column::where('tabel_id', $id)->where('body.'.$index_where, $where[1], is_numeric($where[2]) ? intval($where[2]) : $where[2])->orderBy('body.'.$index_order, $order_type)->get();
@@ -102,7 +130,7 @@ class TableController extends Controller
                 if ($order != null) {
                     $index_order = array_search($func($order), array_map($func,$header));
                     if ($index_order === FALSE) {
-                        return "Error";
+                        return 'Error';
                     }
                     else{
                         $columns_table = Column::where('tabel_id', $id)->orderBy('body.'.$index_order, $order_type)->get();
@@ -115,7 +143,7 @@ class TableController extends Controller
             foreach ($columns_table as $column) {
                 $columns[] = $column['body'];
             }
-            return isset($columns) ? $columns : "Table not found";
+            return isset($columns) ? $columns : 'Table not found';
         }
         else{
             foreach ($selects as $select) {
@@ -126,7 +154,7 @@ class TableController extends Controller
                 if ($order != null) {
                     $index_order = array_search($func($order), array_map($func,$header));
                     if ($index_order === FALSE) {
-                        return "Error";
+                        return 'Error';
                     }
                     else{
                         $columns_table = Column::where('tabel_id', $id)->orderBy('body.'.$index_order, $order_type)->get();
@@ -144,7 +172,7 @@ class TableController extends Controller
                 return $columns;
             }
             else{
-                return "Error";
+                return 'Error';
             }
         }
     }
