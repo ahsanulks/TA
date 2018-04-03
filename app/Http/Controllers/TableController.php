@@ -71,22 +71,29 @@ class TableController extends Controller
 
     public function get_column_with_complex_where($selects, $id, $header, $where){
         foreach ($where['arguments'] as $args) {
-            $where_condition[] = explode(' ', $args);
+            $GLOBALS['where_condition'][] = explode(' ', $args);
         }
+        $GLOBALS['operators'] = $where['operators'];
         if ($selects[0] == '*') {
-            $where_index = $this->map_arguments($where['identifier'], $header); 
-            if ($this->check_false_array($where_index)) return 'Error';
-            $query = Column::query()->where('tabel_id', $id);
-            $i = 0;
-            //kurang nambahin or atau and
-            foreach ($where_index as $value) {
-                $query->where('body.'.$value, $where_condition[$i][1], is_numeric($where_condition[$i][2]) ? intval($where_condition[$i][2]) : $where_condition[$i][2]);
-                $i++;
-            }
-            dd($query);
-            $result = $query->get();
-            return $result;
-            // Column::where('table_id', $id)->
+            $GLOBALS['where_index'] = $this->map_arguments($where['identifier'], $header); 
+            if ($this->check_false_array($GLOBALS['where_index'])) return 'Error';
+            $results = Column::query()->where('tabel_id', $id)->where(function ($query){
+                $i = 0;
+                for ($i=0; $i < sizeof($GLOBALS['where_index']) ; $i++) {
+                    if ($i == 0) {
+                        $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][1], is_numeric($GLOBALS['where_condition'][$i][2]) ? intval($GLOBALS['where_condition'][$i][2]) : $GLOBALS['where_condition'][$i][2]);
+                    } 
+                    if (isset($GLOBALS['operators'][$i-1])) {
+                        if ($GLOBALS['operators'][$i-1] == 'AND') {
+                            $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][1], is_numeric($GLOBALS['where_condition'][$i][2]) ? intval($GLOBALS['where_condition'][$i][2]) : $GLOBALS['where_condition'][$i][2]);
+                        }
+                        elseif ($GLOBALS['operators'][$i-1] == 'OR') {
+                            $query->orWhere('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][1], is_numeric($GLOBALS['where_condition'][$i][2]) ? intval($GLOBALS['where_condition'][$i][2]) : $GLOBALS['where_condition'][$i][2]);
+                        }
+                    }
+                }
+            });
+            return $results->get();
         }
         return Column::where('tabel_id', $id)->get();
     }
