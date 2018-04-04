@@ -69,9 +69,17 @@ class TableController extends Controller
     	return false;
     }
 
+    public function explode_where($where){
+        preg_match_all("/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)/", $where, $matches);
+        return $matches[0][0];
+    }
+
     public function get_column_with_complex_where($selects, $id, $header, $where){
-        foreach ($where['arguments'] as $args) {
-            $GLOBALS['where_condition'][] = explode(' ', $args);
+        foreach ($where['arguments'] as $key => $args) {
+            $args = str_replace(' ', '', $args);
+            $delimiter = $this->explode_where($args);
+            $GLOBALS['where_condition'][] = explode($delimiter, $args);
+            $GLOBALS['where_condition'][$key][] = $delimiter;
         }
         $GLOBALS['operators'] = $where['operators'];
         if ($selects[0] == '*') {
@@ -81,14 +89,14 @@ class TableController extends Controller
                 $i = 0;
                 for ($i=0; $i < sizeof($GLOBALS['where_index']) ; $i++) {
                     if ($i == 0) {
-                        $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][1], is_numeric($GLOBALS['where_condition'][$i][2]) ? intval($GLOBALS['where_condition'][$i][2]) : $GLOBALS['where_condition'][$i][2]);
+                        $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][2], is_numeric($GLOBALS['where_condition'][$i][1]) ? intval($GLOBALS['where_condition'][$i][1]) : $GLOBALS['where_condition'][$i][1]);
                     } 
                     if (isset($GLOBALS['operators'][$i-1])) {
                         if ($GLOBALS['operators'][$i-1] == 'AND') {
-                            $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][1], is_numeric($GLOBALS['where_condition'][$i][2]) ? intval($GLOBALS['where_condition'][$i][2]) : $GLOBALS['where_condition'][$i][2]);
+                            $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][2], is_numeric($GLOBALS['where_condition'][$i][1]) ? intval($GLOBALS['where_condition'][$i][1]) : $GLOBALS['where_condition'][$i][1]);
                         }
                         elseif ($GLOBALS['operators'][$i-1] == 'OR') {
-                            $query->orWhere('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][1], is_numeric($GLOBALS['where_condition'][$i][2]) ? intval($GLOBALS['where_condition'][$i][2]) : $GLOBALS['where_condition'][$i][2]);
+                            $query->orWhere('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][2], is_numeric($GLOBALS['where_condition'][$i][1]) ? intval($GLOBALS['where_condition'][$i][1]) : $GLOBALS['where_condition'][$i][1]);
                         }
                     }
                 }
