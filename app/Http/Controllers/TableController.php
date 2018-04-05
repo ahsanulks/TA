@@ -9,7 +9,7 @@ use App\Models\TabelModel as Table;
 use App\Models\Column;
 use Illuminate\Support\Facades\DB;
 
-class TableController extends Controller
+class TableController extends TableParserController
 {
     //
     public function getAllUrlTable($id){
@@ -32,9 +32,10 @@ class TableController extends Controller
     }
 
     public function getTable($id, Request $req){
-    	$table = Table::select('name', 'header')->where('_id', $id)->first();
-    	unset($table->_id);
-    	$data['table'] = $table;
+        $table = Table::select('name', 'header')->where('_id', $id)->first();
+        $headers = $table->header;
+        $table = $this->get_table_and_header($table, $req->select);
+        $data['table'] = $table;
         if (isset($req->where) && sizeof($req->where) == 1) {
             $where = explode(' ', $req->where);
             if (sizeof($where) == 3) {
@@ -47,7 +48,7 @@ class TableController extends Controller
             }
         }
         else if (isset($req->where) && sizeof($req->where) > 1){
-            $data['columns'] = $this->get_column_with_complex_where($req->select, $id, $table->header, $req->where);
+            $data['columns'] = $this->get_column_with_complex_where($req->select, $id, $headers, $req->where);
         }
         else{
             if (isset($req->order)) {
@@ -56,64 +57,8 @@ class TableController extends Controller
             else{
                 $data['columns'] = $this->get_column($req->select, $id, $table->header);   
             }
-        }   	
+        }
     	return response()->json($data);
-    } 
-
-    public function check_false_array($array){
-    	foreach ($array as $arr) {
-    		if ($arr === false) {
-    			return true;
-    		}
-    	}
-    	return false;
-    }
-
-    public function explode_where($where){
-        preg_match_all("/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)/", $where, $matches);
-        return $matches[0][0];
-    }
-
-    public function get_column_with_complex_where($selects, $id, $header, $where){
-        foreach ($where['arguments'] as $key => $args) {
-            $args = str_replace(' ', '', $args);
-            $delimiter = $this->explode_where($args);
-            $GLOBALS['where_condition'][] = explode($delimiter, $args);
-            $GLOBALS['where_condition'][$key][] = $delimiter;
-        }
-        $GLOBALS['operators'] = $where['operators'];
-        if ($selects[0] == '*') {
-            $GLOBALS['where_index'] = $this->map_arguments($where['identifier'], $header); 
-            if ($this->check_false_array($GLOBALS['where_index'])) return 'Error';
-            $results = Column::query()->where('tabel_id', $id)->where(function ($query){
-                $i = 0;
-                for ($i=0; $i < sizeof($GLOBALS['where_index']) ; $i++) {
-                    if ($i == 0) {
-                        $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][2], is_numeric($GLOBALS['where_condition'][$i][1]) ? intval($GLOBALS['where_condition'][$i][1]) : $GLOBALS['where_condition'][$i][1]);
-                    } 
-                    if (isset($GLOBALS['operators'][$i-1])) {
-                        if ($GLOBALS['operators'][$i-1] == 'AND') {
-                            $query->where('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][2], is_numeric($GLOBALS['where_condition'][$i][1]) ? intval($GLOBALS['where_condition'][$i][1]) : $GLOBALS['where_condition'][$i][1]);
-                        }
-                        elseif ($GLOBALS['operators'][$i-1] == 'OR') {
-                            $query->orWhere('body.'.$GLOBALS['where_index'][$i], $GLOBALS['where_condition'][$i][2], is_numeric($GLOBALS['where_condition'][$i][1]) ? intval($GLOBALS['where_condition'][$i][1]) : $GLOBALS['where_condition'][$i][1]);
-                        }
-                    }
-                }
-            });
-            return $results->get();
-        }
-        return Column::where('tabel_id', $id)->get();
-    }
-
-    public function map_arguments($where, $header){
-        $func = function($value){
-                    return strtolower(str_replace(' ', '', $value));
-                };       
-        foreach ($where as $w) {
-            $index_where[] = array_search($func($w), array_map($func, $header));
-        }
-        return $index_where;
     }
 
     public function get_column($selects, $id, $header, $where = null, $order = null, $order_type = null){
