@@ -36,19 +36,8 @@ class TableController extends TableParserController
         $headers = $table->header;
         $table = $this->get_table_and_header($table, $req->select);
         $data['table'] = $table;
-        if (isset($req->where) && sizeof($req->where) == 1) {
-            $where = explode(' ', $req->where);
-            if (sizeof($where) == 3) {
-                if (isset($req->order)) {
-                    $data['columns'] = $this->get_column($req->select, $id, $table->header, $where, $req->order, $req->order_type);
-                }
-                else{
-                    $data['columns'] = $this->get_column($req->select, $id, $table->header, $where);
-                }
-            }
-        }
-        else if (isset($req->where) && sizeof($req->where) > 1){
-            $data['columns'] = $this->get_column_with_complex_where($req->select, $id, $headers, $req->where);
+        if (isset($req->where)){
+            $data['columns'] = $this->get_column_with_where($req->select, $id, $headers, $req->where);
         }
         else{
             if (isset($req->order)) {

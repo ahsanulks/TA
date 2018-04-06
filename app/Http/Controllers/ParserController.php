@@ -96,7 +96,7 @@ class ParserController extends Controller
       $parser = new Parser($query);
       $flags = Query::getFlags($parser->statements[0]);
       if ($flags['querytype'] == 'SELECT') {
-        $from = $parser->statements[0]->from[0]->table;
+        $from = strtolower($parser->statements[0]->from[0]->table);
         $expression = $parser->statements[0]->expr;
         $table = Url::find($req->id)->tables->where('name',$from)->first();
         foreach ($expression as $column) {
@@ -120,20 +120,15 @@ class ParserController extends Controller
     }
 
     public function get_where($where){
-      if (sizeof($where) > 1) {
-        foreach ($where as $w) {
-          if ($w->isOperator) {
-            $data['operators'][] = $w->expr;
-          }
-          else{
-            $data['arguments'][] = $w->expr;
-            $data['identifier'][] = $w->identifiers[0];
-          }
+      foreach ($where as $w) {
+        if ($w->isOperator) {
+          $data['operators'][] = $w->expr;
         }
-        return $data;
+        else{
+          $data['arguments'][] = $w->expr;
+          $data['identifier'][] = $w->identifiers[0];
+        }
       }
-      else{
-        return $where[0]->expr;
-      }
+      return $data;
     }
 }

@@ -52,7 +52,7 @@ class TableParserController extends Controller
         return $table;
     }
 
-    public function get_column_with_complex_where($selects, $id, $header, $where){
+    public function get_column_with_where($selects, $id, $header, $where){
 	    $GLOBALS['where_index'] = $this->map_arguments($where['identifier'], $header); 
 	    if ($this->check_false_array($GLOBALS['where_index'])) return 'Error';
 
@@ -67,20 +67,23 @@ class TableParserController extends Controller
             $GLOBALS['where_condition'][] 		= explode($delimiter, $args);
             $GLOBALS['where_condition'][$key][] = $delimiter;
         }
-        $GLOBALS['operators'] = $where['operators'];
+        $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
         $results	= $this->get_column_collection($id);
         $result 	= $this->get_body_column($results);
 
-        return $selects[0] == '*' ? $result : $this->dynamic_select($result, $selects);
+        return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $selects);
     }
 
-    public function get_column_collection($table_id){
-    	return Column::query()->where('tabel_id', $table_id)->where(function ($query){
-        	$this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition']);
-        })->get();
+    public function get_column_collection($table_id, $order = false){
+    	$result = Column::query()->where('tabel_id', $table_id)->where(function ($query){
+			        	$this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition'], true);
+			        });
+    	if ($order) $this->add_order($result);
+    	return $result->get();
     }
 
     public function get_body_column($columns_table){
+    	if (sizeof($columns_table) == 0) return '';
         foreach ($columns_table as $column) {
             $columns[] = $column['body'];
         }
@@ -102,20 +105,20 @@ class TableParserController extends Controller
     	for ($i=0; $i < sizeof($where_index) ; $i++) {
             if ($i == 0) {
                 $this->query_and($query, $where_index, $where_condition, $i);
-            } 
-            if (isset($operators[$i-1])) {
-                if ($operators[$i-1] == 'AND') {
-                	$this->query_and($query, $where_index, $where_condition, $i);
-                }
-                elseif ($operators[$i-1] == 'OR') {
-                    $this->query_or($query, $where_index, $where_condition, $i);
-                }
             }
+            $this->add_where($operators, $query, $where_index, $where_condition, $i);
         }
     }
 
-    public function add_where(){
-    	
+    public function add_where($operators, $query, $where_index, $where_condition, $i){
+    	if (isset($operators[$i-1])) {
+            if ($operators[$i-1] == 'AND') {
+            	$this->query_and($query, $where_index, $where_condition, $i);
+            }
+            elseif ($operators[$i-1] == 'OR') {
+                $this->query_or($query, $where_index, $where_condition, $i);
+            }
+        }
     }
 
     public function query_and($query, $where_index, $where_condition, $i){
