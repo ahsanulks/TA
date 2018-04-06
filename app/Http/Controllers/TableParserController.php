@@ -52,14 +52,20 @@ class TableParserController extends Controller
         return $table;
     }
 
-    public function get_column_with_where($selects, $id, $header, $where){
-	    $GLOBALS['where_index'] = $this->map_arguments($where['identifier'], $header); 
-	    if ($this->check_false_array($GLOBALS['where_index'])) return 'Error';
+    public function valid_where_and_select($selects, $where, $header){
+    	$GLOBALS['where_index'] = $this->map_arguments($where['identifier'], $header); 
+	    if ($this->check_false_array($GLOBALS['where_index'])) return false;
 
 	    if ($selects[0] != '*') {
-	    	$selects = $this->map_arguments($selects, $header);
-	        if ($this->check_false_array($selects)) return 'Error';
+	    	$GLOBALS['selects'] = $this->map_arguments($selects, $header);
+	        if ($this->check_false_array($selects)) return false;
 	    }
+
+	    return true;
+    }
+
+    public function get_column_with_where($selects, $id, $header, $where){
+	  	if (!$this->valid_where_and_select($selects, $where, $header)) return 'Error';
 
 	    foreach ($where['arguments'] as $key => $args) {
             $args 								= str_replace(' ', '', $args);
@@ -71,7 +77,7 @@ class TableParserController extends Controller
         $results	= $this->get_column_collection($id);
         $result 	= $this->get_body_column($results);
 
-        return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $selects);
+        return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
     }
 
     public function get_column_collection($table_id, $order = false){
