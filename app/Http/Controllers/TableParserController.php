@@ -58,7 +58,7 @@ class TableParserController extends Controller
 
 	    if ($selects[0] != '*') {
 	    	$GLOBALS['selects'] = $this->map_arguments($selects, $header);
-	        if ($this->check_false_array($selects)) return false;
+	        if ($this->check_false_array($GLOBALS['selects'])) return false;
 	    }
 
 	    return true;

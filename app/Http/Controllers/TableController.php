@@ -40,90 +40,30 @@ class TableController extends TableParserController
             $data['columns'] = $this->get_column_with_where($req->select, $id, $headers, $req->where, $req->order);
         }
         else{
-            if (isset($req->order)) {
-                $data['columns'] = $this->get_column($req->select, $id, $table->header, null, $req->order, $req->order_type);
-            }
-            else{
-                $data['columns'] = $this->get_column($req->select, $id, $table->header);   
-            }
+            $data['columns'] = $this->get_column($req->select, $id, $headers, $req->order);
         }
     	return response()->json($data);
     }
 
-    public function get_column($selects, $id, $header, $where = null, $order = null, $order_type = null){
-        $func = function($value){
-                    return strtolower(str_replace(' ', '', $value));
-                };
-        if ($selects[0] == '*') {
-            if ($where != null) {
-                $index_where = array_search($func($where[0]), array_map($func,$header));
-                if ($index_where === FALSE) {
-                    return 'Error';
-                }
-                else{
-                    if ($order != null) {
-                        $index_order = array_search($func($order), array_map($func,$header));
-                        if ($index_order === FALSE) {
-                            return 'Error';
-                        }
-                        else{
-                            $columns_table = Column::where('tabel_id', $id)->where('body.'.$index_where, $where[1], is_numeric($where[2]) ? intval($where[2]) : $where[2])->orderBy('body.'.$index_order, $order_type)->get();
-                        }
-                    }
-                    else{
-                        $columns_table = Column::where('tabel_id', $id)->where('body.'.$index_where, $where[1], is_numeric($where[2]) ? intval($where[2]) : $where[2])->get();
-                    }
-                }
-            }
-            else{
-                if ($order != null) {
-                    $index_order = array_search($func($order), array_map($func,$header));
-                    if ($index_order === FALSE) {
-                        return 'Error';
-                    }
-                    else{
-                        $columns_table = Column::where('tabel_id', $id)->orderBy('body.'.$index_order, $order_type)->get();
-                    }
-                }
-                else{
-                    $columns_table = Column::where('tabel_id', $id)->get();
-                }
-            }
-            foreach ($columns_table as $column) {
-                $columns[] = $column['body'];
-            }
-            return isset($columns) ? $columns : 'Table not found';
+    public function get_column($select, $table_id, $header, $order = false){
+        if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
+        if (!$this->valid_select($select, $header)) return 'Error';
+
+        $query = Column::query()->where('tabel_id', $table_id);
+
+        if ($order) $this->add_order($query, $order, $header);
+        $result     = $this->get_body_column($query->get());
+
+        return $select[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);;
+    }
+
+    public function valid_select($selects, $header){
+        if ($selects[0] != '*') {
+            $GLOBALS['selects'] = $this->map_arguments($selects, $header);
+            if ($this->check_false_array($GLOBALS['selects'])) return false;
         }
-        else{
-            foreach ($selects as $select) {
-                $column_index[] = array_search(strtolower($select), array_map($func, $header));
-            }
-            if ($this->check_false_array($column_index) === FALSE) {
-                $i = 0;
-                if ($order != null) {
-                    $index_order = array_search($func($order), array_map($func,$header));
-                    if ($index_order === FALSE) {
-                        return 'Error';
-                    }
-                    else{
-                        $columns_table = Column::where('tabel_id', $id)->orderBy('body.'.$index_order, $order_type)->get();
-                    }
-                }
-                else{
-                    $columns_table = Column::where('tabel_id', $id)->get();
-                }
-                foreach ($columns_table as $column) {
-                    foreach ($column_index as $col_index) {
-                        $columns[$i][] = $column['body'][$col_index];
-                    }
-                    $i++;
-                }
-                return $columns;
-            }
-            else{
-                return 'Error';
-            }
-        }
+
+        return true;
     }
 
     public function delete_table($url_id){
