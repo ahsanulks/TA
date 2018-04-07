@@ -37,6 +37,7 @@ class ParserController extends Controller
         $url->save(); 
       }
       $this->schema_definition($string_page, $url);
+      return Redirect::to('/url/'.$url->id);
     }
 
     public function schema_definition($string, $url){
@@ -88,7 +89,6 @@ class ParserController extends Controller
           $tabel->save();
           $j++;
         }
-        return Redirect::to('/url/'.$url->id);
     }
 
     public function sql_parser(Request $req){
@@ -104,13 +104,10 @@ class ParserController extends Controller
         }
         $data['select'] = $select;
         $data['from'] = $from;
+        if($parser->statements[0]->order) $data['order'] = $this->get_order($parser->statements[0]->order);
         $where = $parser->statements[0]->where;
         if ($where != null) {
           $data['where'] = $this->get_where($where);
-        }
-        if ($parser->statements[0]->order != null) {
-          $data['order'] = $parser->statements[0]->order[0]->expr->expr;
-          $data['order_type'] = $parser->statements[0]->order[0]->type;
         }
         return Redirect::to('/table/'.$table->id."?".http_build_query($data));
       }
@@ -128,6 +125,14 @@ class ParserController extends Controller
           $data['arguments'][] = $w->expr;
           $data['identifier'][] = $w->identifiers[0];
         }
+      }
+      return $data;
+    }
+
+    public function get_order($order){
+      foreach ($order as $key => $order) {
+        $data['arguments'][] = $order->expr->column;
+        $data['type'][] = $order->type;
       }
       return $data;
     }
