@@ -37,7 +37,7 @@ class TableController extends TableParserController
         $table = $this->get_table_and_header($table, $req->select);
         $data['table'] = $table;
         if (isset($req->where)){
-            $data['columns'] = $this->get_column_with_where($req->select, $id, $headers, $req->where);
+            $data['columns'] = $this->get_column_with_where($req->select, $id, $headers, $req->where, $req->order);
         }
         else{
             if (isset($req->order)) {
@@ -124,5 +124,13 @@ class TableController extends TableParserController
                 return 'Error';
             }
         }
+    }
+
+    public function delete_table($url_id){
+        Table::where('url_id', $url_id)->delete();
+    }
+
+    public function delete_column($table_id){
+        Column::where('tabel_id', $table_id)->delete();
     }
 }

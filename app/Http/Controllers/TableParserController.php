@@ -64,8 +64,15 @@ class TableParserController extends Controller
 	    return true;
     }
 
-    public function get_column_with_where($selects, $id, $header, $where){
+    public function valid_order($order, $header){
+    	$order_index = $this->map_arguments($order, $header);
+    	if ($this->check_false_array($order_index)) return false;
+    	return true;
+    }
+
+    public function get_column_with_where($selects, $id, $header, $where, $order = false){
 	  	if (!$this->valid_where_and_select($selects, $where, $header)) return 'Error';
+	  	if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
 
 	    foreach ($where['arguments'] as $key => $args) {
             $args 								= str_replace(' ', '', $args);
@@ -74,17 +81,17 @@ class TableParserController extends Controller
             $GLOBALS['where_condition'][$key][] = $delimiter;
         }
         $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
-        $results	= $this->get_column_collection($id);
+        $results	= $this->get_column_collection($id, $header, $order);
         $result 	= $this->get_body_column($results);
 
         return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
     }
 
-    public function get_column_collection($table_id, $order = false){
+    public function get_column_collection($table_id, $header, $order = false){
     	$result = Column::query()->where('tabel_id', $table_id)->where(function ($query){
 			        	$this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition'], true);
 			        });
-    	if ($order) $this->add_order($result);
+    	if ($order) $this->add_order($result, $order, $header);
     	return $result->get();
     }
 
@@ -134,5 +141,12 @@ class TableParserController extends Controller
     public function query_or($query, $where_index, $where_condition, $i){
     	$query->orWhere('body.'.$where_index[$i], $where_condition[$i][2], is_numeric($where_condition[$i][1]) ? intval($where_condition[$i][1]) : $where_condition[$i][1]);
     }
+
+    public function add_order($query, $order, $header){
+    	$order['index'] = $this->map_arguments($order['arguments'], $header);
+    	foreach ($order['index'] as $key => $order_index) {
+    		$query->orderBy('body.'.$order_index, $order['type'][$key]);
+    	}
+    } 
 
 }
