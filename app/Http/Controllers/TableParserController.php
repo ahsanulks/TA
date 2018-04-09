@@ -30,7 +30,7 @@ class TableParserController extends Controller
 
     public function explode_where($where){
         preg_match_all("/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)/", $where, $matches);
-        return $matches[0][0];
+        return isset($matches[0][0]) ? $matches[0][0] : 'between';
     }
 
     public function partially_header($header_partial, $all_header, $index_header = false){
@@ -40,16 +40,6 @@ class TableParserController extends Controller
             $headers[$key] = $all_header[$header];
         }
         return $headers;
-    }
-
-    public function get_table_and_header($table, $select){
-    	unset($table->_id);
-        if ($select[0] != '*') {
-            $headers = $this->partially_header($select, $table->header);
-            unset($table->header);
-            $table->header = $headers;
-        }
-        return $table;
     }
 
     public function valid_where_and_select($selects, $where, $header){
@@ -64,35 +54,30 @@ class TableParserController extends Controller
 	    return true;
     }
 
+    public function valid_select($selects, $header){
+        if ($selects[0] != '*') {
+            $GLOBALS['selects'] = $this->map_arguments($selects, $header);
+            if ($this->check_false_array($GLOBALS['selects'])) return false;
+        }
+
+        return true;
+    }
+
     public function valid_order($order, $header){
     	$order_index = $this->map_arguments($order, $header);
     	if ($this->check_false_array($order_index)) return false;
     	return true;
     }
 
-    public function get_column_with_where($selects, $id, $header, $where, $order = false){
-	  	if (!$this->valid_where_and_select($selects, $where, $header)) return 'Error';
-	  	if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
-
-	    foreach ($where['arguments'] as $key => $args) {
-            $args 								= str_replace(' ', '', $args);
-            $delimiter 							= $this->explode_where($args);
-            $GLOBALS['where_condition'][] 		= explode($delimiter, $args);
-            $GLOBALS['where_condition'][$key][] = $delimiter;
-        }
-        $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
-        $results	= $this->get_column_collection($id, $header, $order);
-        $result 	= $this->get_body_column($results);
-
-        return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
-    }
-
-    public function get_column_collection($table_id, $header, $order = false){
-    	$result = Column::query()->where('tabel_id', $table_id)->where(function ($query){
-			        	$this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition'], true);
-			        });
-    	if ($order) $this->add_order($result, $order, $header);
-    	return $result->get();
+    public function get_condition($delimiter, $args){
+    	if ($delimiter == 'between') {
+    		$temp = explode($delimiter, $args); 
+    		$data = [$temp[0], explode('and', $temp[1])];
+    	}
+    	else{
+    		$data = explode($delimiter, $args);
+    	}
+    	return $data;
     }
 
     public function get_body_column($columns_table){
@@ -117,7 +102,12 @@ class TableParserController extends Controller
     public function dynamic_where($query, $operators, $where_index, $where_condition){
     	for ($i=0; $i < sizeof($where_index) ; $i++) {
             if ($i == 0) {
-                $this->query_and($query, $where_index, $where_condition, $i);
+            	if ($where_condition[$i][2] == 'between') {
+            		$this->query_between($query, $where_index, $where_condition, $i);
+            	}
+            	else{
+            		$this->query_and($query, $where_index, $where_condition, $i);
+            	}
             }
             $this->add_where($operators, $query, $where_index, $where_condition, $i);
         }
@@ -125,14 +115,35 @@ class TableParserController extends Controller
 
     public function add_where($operators, $query, $where_index, $where_condition, $i){
     	if (isset($operators[$i-1])) {
-            if ($operators[$i-1] == 'AND') {
+            $this->choose_where($operators, $query, $where_index, $where_condition, $i);
+        }
+    }
+
+    public function where_between_condition($query, $operators, $i){
+    	if ($operators[$i-1] == 'AND') {
+    		$this->query_between($query, $GLOBALS['where_index'], $GLOBALS['where_condition'], $i);
+    	}
+    	else{
+    		$GLOBALS['i'] = $i;
+    		$query->orWhere(function ($query2) {
+				$this->query_between($query2, $GLOBALS['where_index'], $GLOBALS['where_condition'], $GLOBALS['i']);
+			});
+    	}
+    }
+
+	public function choose_where($operators, $query, $where_index, $where_condition, $i){
+		if ($where_condition[$i][2] == 'between') {
+			$this->where_between_condition($query, $operators, $i);
+    	}
+    	else{
+    		if ($operators[$i-1] == 'AND') {
             	$this->query_and($query, $where_index, $where_condition, $i);
             }
             elseif ($operators[$i-1] == 'OR') {
                 $this->query_or($query, $where_index, $where_condition, $i);
             }
-        }
-    }
+    	}
+	}    
 
     public function query_and($query, $where_index, $where_condition, $i){
     	$query->where('body.'.$where_index[$i], $where_condition[$i][2], is_numeric($where_condition[$i][1]) ? intval($where_condition[$i][1]) : $where_condition[$i][1]);
@@ -140,6 +151,17 @@ class TableParserController extends Controller
 
     public function query_or($query, $where_index, $where_condition, $i){
     	$query->orWhere('body.'.$where_index[$i], $where_condition[$i][2], is_numeric($where_condition[$i][1]) ? intval($where_condition[$i][1]) : $where_condition[$i][1]);
+    }
+
+    public function query_between($query, $where_index, $where_condition, $i){
+    	$query->whereBetween('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
+    }
+
+    public function array_is_numeric($array){
+    	foreach ($array as $arr) {
+    		$data[] = is_numeric($arr) ? intval($arr) : $arr;
+    	}
+    	return $data;
     }
 
     public function add_order($query, $order, $header){
