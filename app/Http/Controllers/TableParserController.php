@@ -102,15 +102,19 @@ class TableParserController extends Controller
     public function dynamic_where($query, $operators, $where_index, $where_condition){
     	for ($i=0; $i < sizeof($where_index) ; $i++) {
             if ($i == 0) {
-            	if ($where_condition[$i][2] == 'between') {
-            		$this->query_between($query, $where_index, $where_condition, $i);
-            	}
-            	else{
-            		$this->query_and($query, $where_index, $where_condition, $i);
-            	}
+            	$this->first_where($operators, $query, $where_index, $where_condition, $i);
             }
             $this->add_where($operators, $query, $where_index, $where_condition, $i);
         }
+    }
+
+    public function first_where($operators, $query, $where_index, $where_condition, $i){
+    	if ($where_condition[$i][2] == 'between') {
+    		$this->query_between($query, $where_index, $where_condition, $i);
+    	}
+    	else{
+    		$this->query_and($query, $where_index, $where_condition, $i);
+    	}
     }
 
     public function add_where($operators, $query, $where_index, $where_condition, $i){
