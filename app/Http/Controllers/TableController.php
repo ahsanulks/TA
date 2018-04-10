@@ -57,13 +57,38 @@ class TableController extends TableParserController
         return $select[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);;
     }
 
-    public function valid_select($selects, $header){
-        if ($selects[0] != '*') {
-            $GLOBALS['selects'] = $this->map_arguments($selects, $header);
-            if ($this->check_false_array($GLOBALS['selects'])) return false;
+    public function get_column_with_where($selects, $id, $header, $where, $order = false){
+        if (!$this->valid_where_and_select($selects, $where, $header)) return 'Error';
+        if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
+        foreach ($where['arguments'] as $key => $args) {
+            $args                               = str_replace(' ', '', $args);
+            $delimiter                          = $this->explode_where($args);
+            $GLOBALS['where_condition'][]       = $this->get_condition($delimiter, $args);
+            $GLOBALS['where_condition'][$key][] = $delimiter;
         }
+        $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
+        $results    = $this->get_column_collection($id, $header, $order);
+        $result     = $this->get_body_column($results);
 
-        return true;
+        return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
+    }
+
+    public function get_table_and_header($table, $select){
+        unset($table->_id);
+        if ($select[0] != '*') {
+            $headers = $this->partially_header($select, $table->header);
+            unset($table->header);
+            $table->header = $headers;
+        }
+        return $table;
+    }
+
+    public function get_column_collection($table_id, $header, $order = false){
+        $result = Column::query()->where('tabel_id', $table_id)->where(function ($query){
+                        $this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition'], true);
+                    });
+        if ($order) $this->add_order($result, $order, $header);
+        return $result->get();
     }
 
     public function delete_table($url_id){
