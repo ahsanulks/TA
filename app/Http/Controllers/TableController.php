@@ -98,4 +98,72 @@ class TableController extends TableParserController
     public function delete_column($table_id){
         Column::where('tabel_id', $table_id)->delete();
     }
+
+    public function dynamic_where($query, $operators, $where_index, $where_condition){
+        for ($i=0; $i < sizeof($where_index) ; $i++) {
+            if ($i == 0) {
+                $this->first_where($operators, $query, $where_index, $where_condition, $i);
+            }
+            $this->add_where($operators, $query, $where_index, $where_condition, $i);
+        }
+    }
+
+    public function first_where($operators, $query, $where_index, $where_condition, $i){
+        if ($where_condition[$i][2] == 'between') {
+            $this->query_between($query, $where_index, $where_condition, $i);
+        }
+        elseif ($where_condition[$i][2] == 'in'){
+            $this->query_in($query, $where_index, $where_condition, $i);
+        }
+        else{
+            $this->query_and($query, $where_index, $where_condition, $i);
+        }
+    }
+
+    public function add_where($operators, $query, $where_index, $where_condition, $i){
+        if (isset($operators[$i-1])) {
+            $this->choose_where($operators, $query, $where_index, $where_condition, $i);
+        }
+    }
+
+    public function where_between_condition($query, $operators, $i){
+        if ($operators[$i-1] == 'AND') {
+            $this->query_between($query, $GLOBALS['where_index'], $GLOBALS['where_condition'], $i);
+        }
+        else{
+            $GLOBALS['i'] = $i;
+            $query->orWhere(function ($query2) {
+                $this->query_between($query2, $GLOBALS['where_index'], $GLOBALS['where_condition'], $GLOBALS['i']);
+            });
+        }
+    }
+
+    public function where_in_condition($query, $operators, $i){
+        if ($operators[$i-1] == 'AND') {
+            $this->query_in($query, $GLOBALS['where_index'], $GLOBALS['where_condition'], $i);
+        }
+        else{
+            $GLOBALS['i'] = $i;
+            $query->orWhere(function ($query2) {
+                $this->query_in($query2, $GLOBALS['where_index'], $GLOBALS['where_condition'], $GLOBALS['i']);
+            });
+        }
+    }
+
+    public function choose_where($operators, $query, $where_index, $where_condition, $i){
+        if ($where_condition[$i][2] == 'between') {
+            $this->where_between_condition($query, $operators, $i);
+        }
+        elseif ($where_condition[$i][2] == 'in'){
+            $this->where_in_condition($query, $operators, $i);
+        }
+        else{
+            if ($operators[$i-1] == 'AND') {
+                $this->query_and($query, $where_index, $where_condition, $i);
+            }
+            elseif ($operators[$i-1] == 'OR') {
+                $this->query_or($query, $where_index, $where_condition, $i);
+            }
+        }
+    }
 }
