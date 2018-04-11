@@ -29,8 +29,8 @@ class TableParserController extends Controller
     }
 
     public function explode_where($where){
-        preg_match_all("/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)/", $where, $matches);
-        return isset($matches[0][0]) ? $matches[0][0] : 'between';
+        preg_match_all('/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)|(in)|(notin)|(between)|(notbetween)/', $where, $matches);
+        return $matches[0][0];
     }
 
     public function partially_header($header_partial, $all_header, $index_header = false){
@@ -70,9 +70,14 @@ class TableParserController extends Controller
     }
 
     public function get_condition($delimiter, $args){
-    	if ($delimiter == 'between') {
+    	if ($delimiter == 'between' || $delimiter == 'notbetween') {
     		$temp = explode($delimiter, $args); 
     		$data = [$temp[0], explode('and', $temp[1])];
+    	}
+    	elseif($delimiter == 'in' || $delimiter == 'notin'){
+    		$temp = explode($delimiter, $args);
+    		$temp[1] = str_replace(['[', ']'], '', $temp[1]); 
+    		$data = [$temp[0], explode(',', $temp[1])];
     	}
     	else{
     		$data = explode($delimiter, $args);
@@ -158,10 +163,28 @@ class TableParserController extends Controller
     }
 
     public function query_between($query, $where_index, $where_condition, $i){
-    	$query->whereBetween('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
+        if ($where_condition[$i][2] == 'between') {
+        	$query->whereBetween('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
+        }
+        else{
+            $data = $this->array_is_numeric($where_condition[$i][1]);
+            $data[0] = $data[0] - 1;
+            $data[1] = $data[1] + 1;
+            $query->whereNotBetween('body.'.$where_index[$i], $data);
+        }
+    }
+
+    public function query_in($query, $where_index, $where_condition, $i){
+        if ($where_condition[$i][2] == 'in') {
+            $query->whereIn('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
+        }
+        else{
+            $query->whereNotIn('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
+        }
     }
 
     public function array_is_numeric($array){
+        sort($array);
     	foreach ($array as $arr) {
     		$data[] = is_numeric($arr) ? intval($arr) : $arr;
     	}
