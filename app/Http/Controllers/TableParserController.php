@@ -74,7 +74,11 @@ class TableParserController extends Controller
     		$temp = explode($delimiter, $args); 
     		$data = [$temp[0], explode('and', $temp[1])];
     	}
+<<<<<<< HEAD
     	elseif($delimiter == 'in' || $delimiter == 'notin'){
+=======
+    	elseif($delimiter == 'in'){
+>>>>>>> bb319b8940664a8717c75b203749a299705b1fb6
     		$temp = explode($delimiter, $args);
     		$temp[1] = str_replace(['[', ']'], '', $temp[1]); 
     		$data = [$temp[0], explode(',', $temp[1])];
@@ -102,57 +106,7 @@ class TableParserController extends Controller
             $i++;
         }
         return $columns;
-    }
-
-    public function dynamic_where($query, $operators, $where_index, $where_condition){
-    	for ($i=0; $i < sizeof($where_index) ; $i++) {
-            if ($i == 0) {
-            	$this->first_where($operators, $query, $where_index, $where_condition, $i);
-            }
-            $this->add_where($operators, $query, $where_index, $where_condition, $i);
-        }
-    }
-
-    public function first_where($operators, $query, $where_index, $where_condition, $i){
-    	if ($where_condition[$i][2] == 'between') {
-    		$this->query_between($query, $where_index, $where_condition, $i);
-    	}
-    	else{
-    		$this->query_and($query, $where_index, $where_condition, $i);
-    	}
-    }
-
-    public function add_where($operators, $query, $where_index, $where_condition, $i){
-    	if (isset($operators[$i-1])) {
-            $this->choose_where($operators, $query, $where_index, $where_condition, $i);
-        }
-    }
-
-    public function where_between_condition($query, $operators, $i){
-    	if ($operators[$i-1] == 'AND') {
-    		$this->query_between($query, $GLOBALS['where_index'], $GLOBALS['where_condition'], $i);
-    	}
-    	else{
-    		$GLOBALS['i'] = $i;
-    		$query->orWhere(function ($query2) {
-				$this->query_between($query2, $GLOBALS['where_index'], $GLOBALS['where_condition'], $GLOBALS['i']);
-			});
-    	}
-    }
-
-	public function choose_where($operators, $query, $where_index, $where_condition, $i){
-		if ($where_condition[$i][2] == 'between') {
-			$this->where_between_condition($query, $operators, $i);
-    	}
-    	else{
-    		if ($operators[$i-1] == 'AND') {
-            	$this->query_and($query, $where_index, $where_condition, $i);
-            }
-            elseif ($operators[$i-1] == 'OR') {
-                $this->query_or($query, $where_index, $where_condition, $i);
-            }
-    	}
-	}    
+    }   
 
     public function query_and($query, $where_index, $where_condition, $i){
     	$query->where('body.'.$where_index[$i], $where_condition[$i][2], is_numeric($where_condition[$i][1]) ? intval($where_condition[$i][1]) : $where_condition[$i][1]);
@@ -183,6 +137,10 @@ class TableParserController extends Controller
         }
     }
 
+    public function query_in($query, $where_index, $where_condition, $i){
+    	$query->whereIn('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
+    }
+
     public function array_is_numeric($array){
         sort($array);
     	foreach ($array as $arr) {
@@ -196,6 +154,5 @@ class TableParserController extends Controller
     	foreach ($order['index'] as $key => $order_index) {
     		$query->orderBy('body.'.$order_index, $order['type'][$key]);
     	}
-    } 
-
+    }
 }
