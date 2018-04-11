@@ -74,11 +74,7 @@ class TableParserController extends Controller
     		$temp = explode($delimiter, $args); 
     		$data = [$temp[0], explode('and', $temp[1])];
     	}
-<<<<<<< HEAD
     	elseif($delimiter == 'in' || $delimiter == 'notin'){
-=======
-    	elseif($delimiter == 'in'){
->>>>>>> bb319b8940664a8717c75b203749a299705b1fb6
     		$temp = explode($delimiter, $args);
     		$temp[1] = str_replace(['[', ']'], '', $temp[1]); 
     		$data = [$temp[0], explode(',', $temp[1])];
