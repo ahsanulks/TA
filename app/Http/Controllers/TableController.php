@@ -109,10 +109,10 @@ class TableController extends TableParserController
     }
 
     public function first_where($operators, $query, $where_index, $where_condition, $i){
-        if ($where_condition[$i][2] == 'between') {
+        if ($where_condition[$i][2] == 'between' || $where_condition[$i][2] == 'notbetween') {
             $this->query_between($query, $where_index, $where_condition, $i);
         }
-        elseif ($where_condition[$i][2] == 'in'){
+        elseif ($where_condition[$i][2] == 'in' || $where_condition[$i][2] == 'notin'){
             $this->query_in($query, $where_index, $where_condition, $i);
         }
         else{
@@ -151,19 +151,23 @@ class TableController extends TableParserController
     }
 
     public function choose_where($operators, $query, $where_index, $where_condition, $i){
-        if ($where_condition[$i][2] == 'between') {
+        if ($where_condition[$i][2] == 'between' || $where_condition[$i][2] == 'notbetween') {
             $this->where_between_condition($query, $operators, $i);
         }
-        elseif ($where_condition[$i][2] == 'in'){
+        elseif ($where_condition[$i][2] == 'in' || $where_condition[$i][2] == 'notin'){
             $this->where_in_condition($query, $operators, $i);
         }
         else{
-            if ($operators[$i-1] == 'AND') {
-                $this->query_and($query, $where_index, $where_condition, $i);
-            }
-            elseif ($operators[$i-1] == 'OR') {
-                $this->query_or($query, $where_index, $where_condition, $i);
-            }
+            $this->where_condition($operators, $query, $where_index, $where_condition, $i);
+        }
+    }
+
+    public function where_condition($operators, $query, $where_index, $where_condition, $i){
+        if ($operators[$i-1] == 'AND') {
+            $this->query_and($query, $where_index, $where_condition, $i);
+        }
+        elseif ($operators[$i-1] == 'OR') {
+            $this->query_or($query, $where_index, $where_condition, $i);
         }
     }
 }
