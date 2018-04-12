@@ -133,10 +133,6 @@ class TableParserController extends Controller
         }
     }
 
-    public function query_in($query, $where_index, $where_condition, $i){
-    	$query->whereIn('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
-    }
-
     public function array_is_numeric($array){
         sort($array);
     	foreach ($array as $arr) {

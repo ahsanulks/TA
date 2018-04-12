@@ -158,12 +158,16 @@ class TableController extends TableParserController
             $this->where_in_condition($query, $operators, $i);
         }
         else{
-            if ($operators[$i-1] == 'AND') {
-                $this->query_and($query, $where_index, $where_condition, $i);
-            }
-            elseif ($operators[$i-1] == 'OR') {
-                $this->query_or($query, $where_index, $where_condition, $i);
-            }
+            $this->where_condition($operators, $query, $where_index, $where_condition, $i);
+        }
+    }
+
+    public function where_condition($operators, $query, $where_index, $where_condition, $i){
+        if ($operators[$i-1] == 'AND') {
+            $this->query_and($query, $where_index, $where_condition, $i);
+        }
+        elseif ($operators[$i-1] == 'OR') {
+            $this->query_or($query, $where_index, $where_condition, $i);
         }
     }
 }
