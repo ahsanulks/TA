@@ -20,16 +20,22 @@ class TtlController extends Controller
 		$this->url 		= Table::find($this->table_id)->url ?? false;
     }
 
-	public function ttl_table(){
-		if (!$this->url) return 'Table Not Found';
-		return $this->is_expired() ? $this->set_lowest() : $this->increment($this->url->ttl);
-	}
-
 	public function is_expired(){
 		date_default_timezone_set('Asia/Jakarta');
 		$date = date('Y-m-d H:i:s', time());
 		$expired = $this->convert_ttl($this->url->ttl, $this->url->updated_at);
 		return $date > $expired ? true : false;
+	}
+
+	public function update_ttl(){
+		$this->url->ttl = $this->ttl_table();
+		$this->url->save();
+		return true;
+	}
+
+	private function ttl_table(){
+		if (!$this->url) return 'Table Not Found';
+		return $this->is_expired() ? $this->set_lowest() : $this->increment($this->url->ttl);
 	}
 
 	private function increment($ttl){

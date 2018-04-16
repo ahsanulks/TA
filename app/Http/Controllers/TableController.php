@@ -37,8 +37,8 @@ class TableController extends TableParserController
         $ttl = new Ttl($table->id);
         if ($ttl->is_expired()) {
             # update table hanya body, dll yg diupdate.
-            # update ttl
         }
+        $ttl->update_ttl();
         $headers = $table->header;
         $table = $this->get_table_and_header($table, $req->select);
         $data['table'] = $table;
