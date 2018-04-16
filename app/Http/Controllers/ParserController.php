@@ -7,6 +7,7 @@ use PHPHtmlParser\Dom;
 use App\Models\UrlModel as Url;
 use App\Models\TabelModel as Tabel;
 use App\Models\Column;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redirect;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Utils\Query;
@@ -34,7 +35,8 @@ class ParserController extends Controller
       else{
         $url->string_page = $string_page;
         $url->md5 = $md5;
-        $url->save(); 
+        $url->ttl = Config::get('constants.TTL.t_min');;
+        $url->save();
       }
       $this->schema_definition($string_page, $url);
       return Redirect::to('/url/'.$url->id);

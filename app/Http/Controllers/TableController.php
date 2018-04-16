@@ -8,6 +8,7 @@ use App\Models\UrlModel as Url;
 use App\Models\TabelModel as Table;
 use App\Models\Column;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\TtlController as Ttl;
 
 class TableController extends TableParserController
 {
@@ -33,6 +34,11 @@ class TableController extends TableParserController
 
     public function getTable($id, Request $req){
         $table = Table::select('name', 'header')->where('_id', $id)->first();
+        $ttl = new Ttl($table->id);
+        if ($ttl->is_expired()) {
+            # update table hanya body, dll yg diupdate.
+        }
+        $ttl->update_ttl();
         $headers = $table->header;
         $table = $this->get_table_and_header($table, $req->select);
         $data['table'] = $table;
