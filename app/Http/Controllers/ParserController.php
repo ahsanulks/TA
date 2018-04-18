@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use PHPHtmlParser\Dom;
-use App\Models\UrlModel as Url;
 use App\Models\TabelModel as Tabel;
 use App\Models\Column;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redirect;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Utils\Query;
@@ -17,6 +14,7 @@ use PhpMyAdmin\SqlParser\Context;
 use PhpMyAdmin\SqlParser\Token;
 use PhpMyAdmin\SqlParser\TokensList;
 use Illuminate\Support\Facades\URL as GetURL;
+use App\Http\Controllers\SchemaController as Schema;
 
 class ParserController extends Controller
 {
@@ -25,7 +23,9 @@ class ParserController extends Controller
     }
 
     public function createDom(Request $req){
-    	$dom = new Dom();
+    	// $dom = new Dom();
+      $schema = new Schema($req->url);
+      $schema->create_dom();
     	$url = Url::firstOrNew(['url' => $req->url]);
       $string_page = $dom->loadFromUrl($req->url)->outerHTML;
       $md5 = md5($string_page);
