@@ -97,14 +97,6 @@ class TableController extends TableParserController
         return $result->get();
     }
 
-    public function delete_table($url_id){
-        Table::where('url_id', $url_id)->delete();
-    }
-
-    public function delete_column($table_id){
-        Column::where('tabel_id', $table_id)->delete();
-    }
-
     public function dynamic_where($query, $operators, $where_index, $where_condition){
         for ($i=0; $i < sizeof($where_index) ; $i++) {
             if ($i == 0) {

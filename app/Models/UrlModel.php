@@ -13,7 +13,8 @@ class UrlModel extends Eloquent
 
     protected $fillable = [
         'url',
-        'time_to_live',
+        'md5',
+        'ttl',
         'string_page'
     ];
 
