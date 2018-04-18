@@ -96,15 +96,27 @@ class SchemaController extends Controller
 
 	private function get_colspan_data($colspan, $column){
 		if ($colspan != null && $colspan > 1) {
-    		$temp = $column->text;
-    		for ($i = 0; $i < $colspan ; $i++) { 
-    			$data[] = $temp . "_$i";
-    		}
+    		$temp 	= $this->fix_numeric_data($column->text);
+    		$data[] = $this->copy_data($temp, $colspan);
     	}
     	else{
-    		$data = $column->text;
+    		$data = $this->fix_numeric_data($column->text);
     	}
     	return $data;
+	}
+
+	private function copy_data($data, $colspan){
+		if (is_numeric($data)) {
+			for ($i = 0; $i < $colspan ; $i++) { 
+    			$copy_data[] = $data;
+    		}
+		}
+		else{
+			for ($i = 0; $i < $colspan ; $i++) { 
+    			$copy_data[] = $data . "_$i";
+    		}
+		}
+		return $copy_data;
 	}
 
 	private function flatten($array){
@@ -115,5 +127,19 @@ class SchemaController extends Controller
 
     private function delete_column($table_id){
         Column::where('tabel_id', $table_id)->delete();
+    }
+
+    private function fix_numeric_data($number){
+    	$temp = str_replace('.', ',', $number);
+    	if (is_numeric($temp) && strpos(',', $temp)) {
+    		$data = (float) $temp;
+    	}
+    	elseif (is_numeric($number)) {
+    		$data = intval($number);
+    	}
+    	else{
+    		$data = $number;
+    	}
+    	return $data;
     }
 }

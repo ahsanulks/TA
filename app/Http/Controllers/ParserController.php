@@ -11,6 +11,7 @@ use PhpMyAdmin\SqlParser\Utils\Query;
 // use PhpMyAdmin\SqlParser\Context;
 // use PhpMyAdmin\SqlParser\Token;
 // use PhpMyAdmin\SqlParser\TokensList;
+use App\Models\UrlModel as Url;
 use App\Http\Controllers\SchemaController as Schema;
 
 class ParserController extends Controller

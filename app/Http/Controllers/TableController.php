@@ -75,7 +75,6 @@ class TableController extends TableParserController
         $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
         $results    = $this->get_column_collection($id, $header, $order);
         $result     = $this->get_body_column($results);
-
         return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
     }
 
@@ -89,7 +88,7 @@ class TableController extends TableParserController
         return $table;
     }
 
-    public function get_column_collection($table_id, $header, $order = false){
+    public function get_column_collection($table_id, $header, $order){
         $result = Column::query()->where('tabel_id', $table_id)->where(function ($query){
                         $this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition'], true);
                     });
