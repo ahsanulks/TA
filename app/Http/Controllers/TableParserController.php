@@ -75,9 +75,9 @@ class TableParserController extends Controller
     		$data = [$temp[0], explode('and', $temp[1])];
     	}
     	elseif($delimiter == 'in' || $delimiter == 'notin'){
-    		$temp = explode($delimiter, $args);
-    		$temp[1] = str_replace(['[', ']'], '', $temp[1]); 
-    		$data = [$temp[0], explode(',', $temp[1])];
+    		$temp     = explode($delimiter, $args);
+    		$temp[1]  = str_replace(['[', ']'], '', $temp[1]); 
+    		$data     = [$temp[0], explode(',', $temp[1])];
     	}
     	else{
     		$data = explode($delimiter, $args);
@@ -117,9 +117,9 @@ class TableParserController extends Controller
         	$query->whereBetween('body.'.$where_index[$i], $this->array_is_numeric($where_condition[$i][1]));
         }
         else{
-            $data = $this->array_is_numeric($where_condition[$i][1]);
-            $data[0] = $data[0] - 1;
-            $data[1] = $data[1] + 1;
+            $data       = $this->array_is_numeric($where_condition[$i][1]);
+            $data[0]    = $data[0] - 1;
+            $data[1]    = $data[1] + 1;
             $query->whereNotBetween('body.'.$where_index[$i], $data);
         }
     }

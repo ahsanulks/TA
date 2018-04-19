@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PHPHtmlParser\Dom;
-use App\Models\UrlModel as Url;
 use Illuminate\Support\Facades\Config;
+use App\Models\UrlModel as Url;
 use App\Models\TabelModel as Tabel;
 use App\Models\Column;
+use App\Http\Controllers\TtlController as Ttl;
 
 class SchemaController extends Controller
 {
@@ -30,9 +31,17 @@ class SchemaController extends Controller
 	}
 
 	public function update_dom(){
-		$this->url->md5 = $this->temp_md5;
-		$this->url->save();
-		$this->schema_definition();
+		$ttl = new Ttl($this->url->url);
+		if ($this->is_new()) {
+			$this->url->md5 = $this->temp_md5;
+			$ttl->update_ttl('lowest');
+			$this->url->save();
+			$this->schema_definition();
+		}
+		else{
+			$ttl->update_ttl('increment');
+			$this->url->save();
+		}
 	}
 
 	public function is_new(){
@@ -46,10 +55,10 @@ class SchemaController extends Controller
 	private function schema_definition(){
 		$tables = $this->dom->find('table');
 		foreach ($tables as $key => $table) {
-			$url_id 		= $this->url->id;
-			$name 			= 'table_'.$key;
-			$header			= $this->get_data_table($table, 'th');
-			$table_id		= $this->update_table($url_id, $name, $header, $key);
+			$url_id 	= $this->url->id;
+			$name 		= 'table_'.$key;
+			$header		= $this->get_data_table($table, 'th');
+			$table_id	= $this->update_table($url_id, $name, $header, $key);
 			$this->update_column($table, $table_id);
 		}
 	}

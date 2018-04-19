@@ -9,6 +9,7 @@ use App\Models\TabelModel as Table;
 use App\Models\Column;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\TtlController as Ttl;
+use App\Http\Controllers\SchemaController as Schema;
 
 class TableController extends TableParserController
 {
@@ -22,26 +23,29 @@ class TableController extends TableParserController
             return Redirect::to('/');
         }
     	foreach ($tables as $table) {
-    		$data['tables'][] = $table;
-    		$data['column'][$table->id] = $table->columns;
+    		$data['tables'][]             = $table;
+    		$data['column'][$table->id]   = $table->columns;
     	}
-    	// Column::where('tabel_id', $table->id)->where('body', 'all', ['2'])->get()
-    	// dd($data['5a83699020289d115c003a75'][1]['body'][1]);
     	$data['id'] = $id;
     	
     	return view('pages.tables', $data);
     }
 
     public function getTable($id, Request $req){
-        $table = Table::select('name', 'header')->where('_id', $id)->first();
-        $ttl = new Ttl($table->id);
+        $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
+        $url    = $table->url;
+        $ttl    = new Ttl($url->url);
         if ($ttl->is_expired()) {
-            # update table hanya body, dll yg diupdate.
+            $schema = new Schema($url->url);
+            $schema->update_dom();
+            $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
         }
-        $ttl->update_ttl();
-        $headers = $table->header;
-        $table = $this->get_table_and_header($table, $req->select);
-        $data['table'] = $table;
+        else{
+            $ttl->update_ttl('increment');
+        }
+        $headers        = $table->header;
+        $table          = $this->get_table_and_header($table, $req->select);
+        $data['table']  = $table;
         if (isset($req->where)){
             $data['columns'] = $this->get_column_with_where($req->select, $id, $headers, $req->where, $req->order);
         }
@@ -79,11 +83,11 @@ class TableController extends TableParserController
     }
 
     public function get_table_and_header($table, $select){
-        unset($table->_id);
+        unset($table->_id, $table->url_id, $table->url);
         if ($select[0] != '*') {
-            $headers = $this->partially_header($select, $table->header);
+            $headers        = $this->partially_header($select, $table->header);
             unset($table->header);
-            $table->header = $headers;
+            $table->header  = $headers;
         }
         return $table;
     }
