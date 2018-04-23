@@ -57,7 +57,7 @@ class SchemaController extends Controller
 		foreach ($tables as $key => $table) {
 			$url_id 	= $this->url->id;
 			$name 		= 'table_'.$key;
-			$header		= $this->get_data_table($table, 'th');
+			$header		= $this->get_headers_data($table);
 			$table_id	= $this->update_table($url_id, $name, $header, $key);
 			$this->update_column($table, $table_id);
 		}
@@ -81,7 +81,13 @@ class SchemaController extends Controller
 	}
 
 	private function update_column($table, $table_id){
-		$rows = $table->find('tr');
+		$tbody = $table->find('tbody', 0);
+		if (is_null($tbody)) {
+			$rows = $table->find('tr');
+		}
+		else{
+			$rows = $tbody->find('tr');
+		}
 		$data['tabel_id'] = $table_id;
 		foreach ($rows as $key => $row) {
 			$body[] = $this->get_data_table($row, 'td');
@@ -94,22 +100,45 @@ class SchemaController extends Controller
 		}
 	}
 
-	private function get_data_table($dom, $search){
-		$datas = $dom->find($search);
+	private function get_headers_data($dom){
+		$thead = $dom->find('thead', 0);
+		if (is_null($thead)){
+			$row 	= $dom->find('tr', 0);
+			$th 	= $this->get_data_table($row, 'th');
+		}
+		else {
+			$row 	= $thead->find('tr');
+			$th 	= sizeof($row) == 0 ? $this->get_data_table($thead, 'th') : $this->get_data_table($row, 'th');
+		}
+		return $th;
+	}
+
+	private function get_data_table($dom, $search, $i = 0){
+		$datas = (sizeof((array) $dom) != 10) ? $dom[$i]->find($search) : $dom->find($search);
+		$array = array();
+		$rowspan = array();
 		foreach ($datas as $data) {
 			$colspan 	= $data->getAttribute('colspan');
+			$rowspan[]	= $data->getAttribute('rowspan');
 			$array[]	= $this->get_colspan_data($colspan, $data);
+		}
+		$uniq_rowspan = array_unique($rowspan);
+		if (sizeof($uniq_rowspan) > 1 && in_array(null, $uniq_rowspan, TRUE)) {
+			$index_rowspan = array_keys($rowspan, null, true);
+			$temp = $this->get_data_table($dom, $search, $i+1);
+			dd($temp);
+			$array[$index_rowspan[0]] = $array[$index_rowspan[0]] . ' ' . $temp[0];
 		}
 		return $this->flatten($array);
 	}
 
 	private function get_colspan_data($colspan, $column){
 		if ($colspan != null && $colspan > 1) {
-    		$temp 	= $this->fix_numeric_data($column->text);
+    		$temp 	= $this->fix_numeric_data(strip_tags($column->innerHtml));
     		$data[] = $this->copy_data($temp, $colspan);
     	}
     	else{
-    		$data = $this->fix_numeric_data($column->text);
+    		$data = $this->fix_numeric_data(strip_tags($column->innerHtml));
     	}
     	return $data;
 	}
