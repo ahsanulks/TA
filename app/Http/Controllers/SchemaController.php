@@ -52,12 +52,19 @@ class SchemaController extends Controller
 		return $this->url->id;
 	}
 
+	private function to_lower_and_underscore($array){
+		$func = function($value){
+                    return strtolower(str_replace(' ', '_', $value));
+                };
+		return array_map($func, $array);
+	}
+
 	private function schema_definition(){
 		$tables = $this->dom->find('table');
 		foreach ($tables as $key => $table) {
 			$url_id 	= $this->url->id;
 			$name 		= 'table_'.$key;
-			$header		= $this->get_headers_data($table);
+			$header		= $this->to_lower_and_underscore($this->get_headers_data($table));
 			$table_id	= $this->update_table($url_id, $name, $header, $key);
 			$this->update_column($table, $table_id);
 		}
@@ -118,24 +125,33 @@ class SchemaController extends Controller
 		$array = array();
 		$rowspan = array();
 		foreach ($datas as $data) {
-			$colspan 	= $data->getAttribute('colspan');
-			$rowspan[]	= $data->getAttribute('rowspan');
-			$array[]	= $this->get_colspan_data($colspan, $data);
+			$colspantemp[] 	= $data->getAttribute('colspan'); 
+			$colspan 		= $data->getAttribute('colspan');
+			$rowspan[]		= $data->getAttribute('rowspan');
+			$array[]		= $this->get_colspan_data($colspan, $data);
 		}
 		$uniq_rowspan = array_unique($rowspan);
 		if (sizeof($uniq_rowspan) > 1 && in_array(null, $uniq_rowspan, TRUE)) {
 			$index_rowspan = array_keys($rowspan, null, true);
 			$temp = $this->get_data_table($dom, $search, $i+1);
-			dd($temp);
-			$array[$index_rowspan[0]] = $array[$index_rowspan[0]] . ' ' . $temp[0];
+			$array[$index_rowspan[0]] = $this->set_colspan($array[$index_rowspan[0]], $temp, max($colspantemp));
 		}
 		return $this->flatten($array);
+	}
+
+	public function set_colspan($repeated, $aim, $repeat=1){
+		$repeated	= is_string($repeated) ? $repeated : reset($repeated);
+		$temp 		= array();
+		for($i = 0; $i < $repeat; $i++){
+			$temp[] = $repeated . ' ' . $aim[$i];
+		}
+		return $temp;
 	}
 
 	private function get_colspan_data($colspan, $column){
 		if ($colspan != null && $colspan > 1) {
     		$temp 	= $this->fix_numeric_data(strip_tags($column->innerHtml));
-    		$data[] = $this->copy_data($temp, $colspan);
+    		$data = $this->copy_data($temp, $colspan);
     	}
     	else{
     		$data = $this->fix_numeric_data(strip_tags($column->innerHtml));
@@ -144,15 +160,8 @@ class SchemaController extends Controller
 	}
 
 	private function copy_data($data, $colspan){
-		if (is_numeric($data)) {
-			for ($i = 0; $i < $colspan ; $i++) { 
-    			$copy_data[] = $data;
-    		}
-		}
-		else{
-			for ($i = 0; $i < $colspan ; $i++) { 
-    			$copy_data[] = $data . "_$i";
-    		}
+		for ($i = 0; $i < $colspan ; $i++) { 
+			$copy_data[] = $data;
 		}
 		return $copy_data;
 	}

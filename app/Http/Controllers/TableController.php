@@ -71,10 +71,9 @@ class TableController extends TableParserController
         if (!$this->valid_where_and_select($selects, $where, $header)) return 'Error';
         if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
         foreach ($where['arguments'] as $key => $args) {
-            $args                               = str_replace(' ', '', $args);
             $delimiter                          = $this->explode_where($args);
             $GLOBALS['where_condition'][]       = $this->get_condition($delimiter, $args);
-            $GLOBALS['where_condition'][$key][] = $delimiter;
+            $GLOBALS['where_condition'][$key][] = str_replace(' ', '', $delimiter);
         }
         $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
         $results    = $this->get_column_collection($id, $header, $order);

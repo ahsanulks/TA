@@ -29,7 +29,7 @@ class TableParserController extends Controller
     }
 
     public function explode_where($where){
-        preg_match_all('/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)|(in)|(notin)|(between)|(notbetween)/', $where, $matches);
+        preg_match_all('/( != )|( <> )|( = )|( >= )|( <= )|( > )|( < )|( in )|( not in )|( between )|( not between )/', $where, $matches);
         return $matches[0][0];
     }
 
