@@ -9,6 +9,7 @@ use App\Models\TabelModel as Table;
 use App\Models\Column;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\TtlController as Ttl;
+use App\Http\Controllers\SchemaController as Schema;
 
 class TableController extends TableParserController
 {
@@ -22,26 +23,29 @@ class TableController extends TableParserController
             return Redirect::to('/');
         }
     	foreach ($tables as $table) {
-    		$data['tables'][] = $table;
-    		$data['column'][$table->id] = $table->columns;
+    		$data['tables'][]             = $table;
+    		$data['column'][$table->id]   = $table->columns;
     	}
-    	// Column::where('tabel_id', $table->id)->where('body', 'all', ['2'])->get()
-    	// dd($data['5a83699020289d115c003a75'][1]['body'][1]);
     	$data['id'] = $id;
     	
     	return view('pages.tables', $data);
     }
 
     public function getTable($id, Request $req){
-        $table = Table::select('name', 'header')->where('_id', $id)->first();
-        $ttl = new Ttl($table->id);
+        $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
+        $url    = $table->url;
+        $ttl    = new Ttl($url->url);
         if ($ttl->is_expired()) {
-            # update table hanya body, dll yg diupdate.
+            $schema = new Schema($url->url);
+            $schema->update_dom();
+            $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
         }
-        $ttl->update_ttl();
-        $headers = $table->header;
-        $table = $this->get_table_and_header($table, $req->select);
-        $data['table'] = $table;
+        else{
+            $ttl->update_ttl('increment');
+        }
+        $headers        = $table->header;
+        $table          = $this->get_table_and_header($table, $req->select);
+        $data['table']  = $table;
         if (isset($req->where)){
             $data['columns'] = $this->get_column_with_where($req->select, $id, $headers, $req->where, $req->order);
         }
@@ -67,42 +71,32 @@ class TableController extends TableParserController
         if (!$this->valid_where_and_select($selects, $where, $header)) return 'Error';
         if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
         foreach ($where['arguments'] as $key => $args) {
-            $args                               = str_replace(' ', '', $args);
             $delimiter                          = $this->explode_where($args);
             $GLOBALS['where_condition'][]       = $this->get_condition($delimiter, $args);
-            $GLOBALS['where_condition'][$key][] = $delimiter;
+            $GLOBALS['where_condition'][$key][] = str_replace(' ', '', $delimiter);
         }
         $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
         $results    = $this->get_column_collection($id, $header, $order);
         $result     = $this->get_body_column($results);
-
         return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
     }
 
     public function get_table_and_header($table, $select){
-        unset($table->_id);
+        unset($table->_id, $table->url_id, $table->url);
         if ($select[0] != '*') {
-            $headers = $this->partially_header($select, $table->header);
+            $headers        = $this->partially_header($select, $table->header);
             unset($table->header);
-            $table->header = $headers;
+            $table->header  = $headers;
         }
         return $table;
     }
 
-    public function get_column_collection($table_id, $header, $order = false){
+    public function get_column_collection($table_id, $header, $order){
         $result = Column::query()->where('tabel_id', $table_id)->where(function ($query){
                         $this->dynamic_where($query, $GLOBALS['operators'], $GLOBALS['where_index'], $GLOBALS['where_condition'], true);
                     });
         if ($order) $this->add_order($result, $order, $header);
         return $result->get();
-    }
-
-    public function delete_table($url_id){
-        Table::where('url_id', $url_id)->delete();
-    }
-
-    public function delete_column($table_id){
-        Column::where('tabel_id', $table_id)->delete();
     }
 
     public function dynamic_where($query, $operators, $where_index, $where_condition){
