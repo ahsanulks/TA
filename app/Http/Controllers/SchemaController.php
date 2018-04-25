@@ -136,7 +136,7 @@ class SchemaController extends Controller
 			$temp = $this->get_data_table($dom, $search, $i+1);
 			$array[$index_rowspan[0]] = $this->set_colspan($array[$index_rowspan[0]], $temp, max($colspantemp));
 		}
-		return $this->flatten($array);
+		return flatten($array);
 	}
 
 	public function set_colspan($repeated, $aim, $repeat=1){
@@ -150,11 +150,11 @@ class SchemaController extends Controller
 
 	private function get_colspan_data($colspan, $column){
 		if ($colspan != null && $colspan > 1) {
-    		$temp 	= $this->fix_numeric_data(strip_tags($column->innerHtml));
+    		$temp 	= fix_numeric_data(strip_tags($column->innerHtml));
     		$data = $this->copy_data($temp, $colspan);
     	}
     	else{
-    		$data = $this->fix_numeric_data(strip_tags($column->innerHtml));
+    		$data = fix_numeric_data(strip_tags($column->innerHtml));
     	}
     	return $data;
 	}
@@ -166,27 +166,7 @@ class SchemaController extends Controller
 		return $copy_data;
 	}
 
-	private function flatten($array){
-	    $return = array();
-	    array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });
-	    return $return;
-	}
-
     private function delete_column($table_id){
         Column::where('tabel_id', $table_id)->delete();
-    }
-
-    private function fix_numeric_data($number){
-    	$temp = str_replace('.', ',', $number);
-    	if (is_numeric($temp) && strpos(',', $temp)) {
-    		$data = (float) $temp;
-    	}
-    	elseif (is_numeric($number)) {
-    		$data = intval($number);
-    	}
-    	else{
-    		$data = $number;
-    	}
-    	return $data;
     }
 }
