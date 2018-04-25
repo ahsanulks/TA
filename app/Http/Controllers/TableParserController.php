@@ -139,7 +139,7 @@ class TableParserController extends Controller
     public function array_is_numeric($array){
         sort($array);
     	foreach ($array as $arr) {
-    		$data[] = $this->fix_numeric_data($arr);
+    		$data[] = fix_numeric_data($arr);
     	}
     	return $data;
     }
@@ -149,19 +149,5 @@ class TableParserController extends Controller
         foreach ($order['index'] as $key => $order_index) {
             $query->orderBy('body.'.$order_index, $order['type'][$key]);
         }
-    }
-
-    private function fix_numeric_data($number){
-        $temp = str_replace('.', ',', $number);
-        if (is_numeric($number) && strpos($temp, ',')) {
-            $data = (float) $number;
-        }
-        elseif (is_numeric($number)) {
-            $data = intval($number);
-        }
-        else{
-            $data = $number;
-        }
-        return $data;
     }
 }
