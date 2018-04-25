@@ -29,7 +29,7 @@ class TableParserController extends Controller
     }
 
     public function explode_where($where){
-        preg_match_all('/( != )|( <> )|( = )|( >= )|( <= )|( > )|( < )|( in )|( not in )|( between )|( not between )/', $where, $matches);
+        preg_match_all('/(!=)|(<>)|(=)|(>=)|(<=)|(>)|(<)|( in )|( not in )|( between )|( not between )/', $where, $matches);
         return $matches[0][0];
     }
 
@@ -70,17 +70,18 @@ class TableParserController extends Controller
     }
 
     public function get_condition($delimiter, $args){
-    	if ($delimiter == 'between' || $delimiter == 'notbetween') {
+    	if ($delimiter == ' between ' || $delimiter == ' not between ') {
     		$temp = explode($delimiter, $args); 
     		$data = [$temp[0], explode('and', $temp[1])];
     	}
-    	elseif($delimiter == 'in' || $delimiter == 'notin'){
+    	elseif($delimiter == ' in ' || $delimiter == ' not in '){
     		$temp     = explode($delimiter, $args);
     		$temp[1]  = str_replace(['[', ']'], '', $temp[1]); 
-    		$data     = [$temp[0], explode(',', $temp[1])];
+    		$data     = [$temp[0], array_map('trim', explode(',', $temp[1]))];
     	}
     	else{
     		$data = explode($delimiter, $args);
+            $data = array_map('trim', $data);
     	}
     	return $data;
     }
@@ -118,8 +119,10 @@ class TableParserController extends Controller
         }
         else{
             $data       = $this->array_is_numeric($where_condition[$i][1]);
-            $data[0]    = $data[0] - 1;
-            $data[1]    = $data[1] + 1;
+            if (is_numeric($data[0]) && is_numeric($data[1])) {
+                $data[0]    = $data[0] - 1;
+                $data[1]    = $data[1] + 1;
+            }
             $query->whereNotBetween('body.'.$where_index[$i], $data);
         }
     }
@@ -136,15 +139,29 @@ class TableParserController extends Controller
     public function array_is_numeric($array){
         sort($array);
     	foreach ($array as $arr) {
-    		$data[] = is_numeric($arr) ? intval($arr) : $arr;
+    		$data[] = $this->fix_numeric_data($arr);
     	}
     	return $data;
     }
 
     public function add_order($query, $order, $header){
-    	$order['index'] = $this->map_arguments($order['arguments'], $header);
-    	foreach ($order['index'] as $key => $order_index) {
-    		$query->orderBy('body.'.$order_index, $order['type'][$key]);
-    	}
+        $order['index'] = $this->map_arguments($order['arguments'], $header);
+        foreach ($order['index'] as $key => $order_index) {
+            $query->orderBy('body.'.$order_index, $order['type'][$key]);
+        }
+    }
+
+    private function fix_numeric_data($number){
+        $temp = str_replace('.', ',', $number);
+        if (is_numeric($number) && strpos($temp, ',')) {
+            $data = (float) $number;
+        }
+        elseif (is_numeric($number)) {
+            $data = intval($number);
+        }
+        else{
+            $data = $number;
+        }
+        return $data;
     }
 }

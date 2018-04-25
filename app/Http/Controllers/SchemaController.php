@@ -178,15 +178,15 @@ class SchemaController extends Controller
 
     private function fix_numeric_data($number){
     	$temp = str_replace('.', ',', $number);
-    	if (is_numeric($temp) && strpos(',', $temp)) {
-    		$data = (float) $temp;
-    	}
-    	elseif (is_numeric($number)) {
-    		$data = intval($number);
-    	}
-    	else{
-    		$data = $number;
-    	}
-    	return $data;
+        if (is_numeric($number) && strpos($temp, ',')) {
+            $data = (float) $number;
+        }
+        elseif (is_numeric($number)) {
+            $data = intval($number);
+        }
+        else{
+            $data = $number;
+        }
+        return $data;
     }
 }

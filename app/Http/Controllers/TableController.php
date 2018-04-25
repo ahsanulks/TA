@@ -73,7 +73,7 @@ class TableController extends TableParserController
         foreach ($where['arguments'] as $key => $args) {
             $delimiter                          = $this->explode_where($args);
             $GLOBALS['where_condition'][]       = $this->get_condition($delimiter, $args);
-            $GLOBALS['where_condition'][$key][] = str_replace(' ', '', $delimiter);
+            $GLOBALS['where_condition'][$key][] = trim($delimiter);
         }
         $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
         $results    = $this->get_column_collection($id, $header, $order);
@@ -109,10 +109,10 @@ class TableController extends TableParserController
     }
 
     public function first_where($operators, $query, $where_index, $where_condition, $i){
-        if ($where_condition[$i][2] == 'between' || $where_condition[$i][2] == 'notbetween') {
+        if ($where_condition[$i][2] == 'between' || $where_condition[$i][2] == 'not between') {
             $this->query_between($query, $where_index, $where_condition, $i);
         }
-        elseif ($where_condition[$i][2] == 'in' || $where_condition[$i][2] == 'notin'){
+        elseif ($where_condition[$i][2] == 'in' || $where_condition[$i][2] == 'not in'){
             $this->query_in($query, $where_index, $where_condition, $i);
         }
         else{
@@ -151,10 +151,10 @@ class TableController extends TableParserController
     }
 
     public function choose_where($operators, $query, $where_index, $where_condition, $i){
-        if ($where_condition[$i][2] == 'between' || $where_condition[$i][2] == 'notbetween') {
+        if ($where_condition[$i][2] == 'between' || $where_condition[$i][2] == 'not between') {
             $this->where_between_condition($query, $operators, $i);
         }
-        elseif ($where_condition[$i][2] == 'in' || $where_condition[$i][2] == 'notin'){
+        elseif ($where_condition[$i][2] == 'in' || $where_condition[$i][2] == 'not in'){
             $this->where_in_condition($query, $operators, $i);
         }
         else{
