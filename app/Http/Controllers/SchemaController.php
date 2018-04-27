@@ -15,6 +15,7 @@ class SchemaController extends Controller
 	private $url;
 	private $dom;
 	private $temp_md5;
+	private $not_have_thead;
 
 	public function __construct($url) {
 		$this->url = Url::firstOrNew(['url' => $url]);
@@ -97,7 +98,9 @@ class SchemaController extends Controller
 		}
 		$data['tabel_id'] = $table_id;
 		foreach ($rows as $key => $row) {
-			$body[] = $this->get_data_table($row, 'td');
+			// $body[] = $this->get_data_table($row, 'td');
+			if($key == 0 && $this->not_have_thead) continue;
+			$body[] = $this->get_body_data($row);
 		}
 		$this->delete_column($table_id);
 		$chunk_body = array_chunk($body, 1);
@@ -107,11 +110,24 @@ class SchemaController extends Controller
 		}
 	}
 
+	private function get_body_data($dom){
+		$row_th = $dom->find('th', 0);
+		if (is_null($row_th)) {
+			$data[] = $this->get_data_table($dom, 'td');
+		}
+		else{
+			$data[] = strip_tags($row_th->innerHtml);
+			$data[] = $this->get_data_table($dom, 'td');
+		}
+		return flatten($data);
+	}
+
 	private function get_headers_data($dom){
 		$thead = $dom->find('thead', 0);
 		if (is_null($thead)){
-			$row 	= $dom->find('tr', 0);
-			$th 	= $this->get_data_table($row, 'th');
+			$this->not_have_thead 	= true;
+			$row 					= $dom->find('tr', 0);
+			$th 					= $this->get_data_table($row, 'th');
 		}
 		else {
 			$row 	= $thead->find('tr');

@@ -106,11 +106,11 @@ class TableParserController extends Controller
     }   
 
     public function query_and($query, $where_index, $where_condition, $i){
-    	$query->where('body.'.$where_index[$i], $where_condition[$i][2], is_numeric($where_condition[$i][1]) ? intval($where_condition[$i][1]) : $where_condition[$i][1]);
+    	$query->where('body.'.$where_index[$i], $where_condition[$i][2], fix_numeric_data($where_condition[$i][1]));
     }
 
     public function query_or($query, $where_index, $where_condition, $i){
-    	$query->orWhere('body.'.$where_index[$i], $where_condition[$i][2], is_numeric($where_condition[$i][1]) ? intval($where_condition[$i][1]) : $where_condition[$i][1]);
+    	$query->orWhere('body.'.$where_index[$i], $where_condition[$i][2], fix_numeric_data($where_condition[$i][1]));
     }
 
     public function query_between($query, $where_index, $where_condition, $i){
