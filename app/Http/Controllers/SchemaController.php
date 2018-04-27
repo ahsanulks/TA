@@ -97,11 +97,14 @@ class SchemaController extends Controller
 			$rows = $tbody->find('tr');
 		}
 		$data['tabel_id'] = $table_id;
-		foreach ($rows as $key => $row) {
-			// $body[] = $this->get_data_table($row, 'td');
-			if($key == 0 && $this->not_have_thead) continue;
-			$body[] = $this->get_body_data($row);
+
+		$i = 0;
+		if ($this->not_have_thead) $i = 1;
+
+		for ($i; $i < sizeof($rows); $i++) { 
+			$body[] = $this->get_body_data($rows[$i]);
 		}
+		
 		$this->delete_column($table_id);
 		$chunk_body = array_chunk($body, 1);
 		foreach ($chunk_body as $body) {
