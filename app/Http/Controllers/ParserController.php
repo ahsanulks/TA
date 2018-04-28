@@ -67,7 +67,7 @@ class ParserController extends Controller
 
     public function get_order($order){
       foreach ($order as $key => $order) {
-        $data['arguments'][] = $order->expr->column;
+        $data['arguments'][] = $order->expr->expr;
         $data['type'][] = $order->type;
       }
       return $data;
