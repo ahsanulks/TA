@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL as GetURL;
 use App\Models\UrlModel as Url;
 use Carbon\Carbon;
@@ -13,9 +12,11 @@ class TtlController extends Controller
 {
 
 	private $url;
+	private $type;
 	
-	public function __construct($url) {
+	public function __construct($url, $type) {
 		$this->url 	= Url::where('url', $url)->first() ?? false;
+		$this->type = $type;
     }
 
 	public function is_expired(){
@@ -32,17 +33,16 @@ class TtlController extends Controller
 	}
 
 	private function ttl_table($params){
-		return ($params == 'lowest') ? $this->set_lowest() : $this->increment($this->url->ttl);
+		return ($params == 'lowest') ? $this->set_lowest() : $this->increment($this->url->ttl, $this->type);
 	}
 
-	private function increment($ttl){
-		$c 			= Config::get('constants.TTL.c');
-		$increment 	= $ttl + (pow($c, $ttl));
-		return $increment < 7 ? $increment : 7;
+	private function increment($ttl, $type){
+		$increment = $this->$type($ttl);
+		return $increment < Url::TTL_MAX ? $increment : Url::TTL_MAX;
 	}
 
 	private function set_lowest(){
-		return Config::get('constants.TTL.t_min');
+		return Url::TTL_MIN;
 	}
 
 	private function convert_ttl($ttl, $updated_at){
@@ -55,5 +55,17 @@ class TtlController extends Controller
 		$expired->addHours($hour);
 		$expired->addMinutes($minutes);
 		return $expired;
+	}
+
+	private function linear($ttl){
+		return $ttl + (Url::TTL_C_LINEAR * $ttl);
+	}
+
+	private function polynomial($ttl){
+		return $ttl + (pow($ttl, Url::TTL_C_POLYNOMIAL));
+	}
+
+	private function exponential($ttl){
+		return $ttl + (pow(Url::TTL_C_EXPONENTIAL, $ttl));
 	}
 }
