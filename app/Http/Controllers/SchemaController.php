@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PHPHtmlParser\Dom;
-use Illuminate\Support\Facades\Config;
 use App\Models\UrlModel as Url;
 use App\Models\TabelModel as Tabel;
 use App\Models\Column;
@@ -26,7 +25,7 @@ class SchemaController extends Controller
 
 	public function create_dom(){
 		$this->url->md5 = $this->temp_md5;
-		$this->url->ttl = Config::get('constants.TTL.t_min');
+		$this->url->ttl = Url::TTL_MIN;
 		$this->url->save();
 		$this->schema_definition();
 	}

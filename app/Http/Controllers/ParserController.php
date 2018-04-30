@@ -45,10 +45,11 @@ class ParserController extends Controller
         if ($where != null) {
           $data['where'] = $this->get_where($where);
         }
+        $data['type'] = $req->type;
         return Redirect::to('/table/'.$table->id."?".http_build_query($data));
       }
       else{
-        echo "access denied";
+        echo "query denied";
       }
     }
 

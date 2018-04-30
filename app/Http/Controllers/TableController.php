@@ -32,9 +32,10 @@ class TableController extends TableParserController
     }
 
     public function getTable($id, Request $req){
+        if(!in_array($req->type, Url::TTL_TYPE)) return 'Invalid Type';
         $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
         $url    = $table->url;
-        $ttl    = new Ttl($url->url);
+        $ttl    = new Ttl($url->url, $req->type);
         if ($ttl->is_expired()) {
             $schema = new Schema($url->url);
             $schema->update_dom();

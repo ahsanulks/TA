@@ -8,6 +8,11 @@ Welcome
 <form method="get" action="{{url('parse-sql')}}">
 	<input type="text" name="sql" placeholder="select * from" size="100">
 	<input type="hidden" name="id" value="{{isset($id) ? $id : ''}}">
+	<select name="type">
+		<option value="linear">Linear</option>
+		<option value="polynomial">Polynomial</option>
+		<option value="exponensial">Exponensial</option>
+	</select>
 	<button type="submit">Sql</button>
 </form>
 
