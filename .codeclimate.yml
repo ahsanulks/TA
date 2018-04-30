@@ -34,3 +34,4 @@ checks:
 # exclude
 exclude_patterns:
 - "bower_components/"
+- "public/js/vue.js"
