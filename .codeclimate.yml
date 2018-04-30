@@ -1,5 +1,8 @@
 version: "2"         # required to adjust maintainability checks
 checks:
+  # exclude
+  exclude_patterns:
+  - "bower_components/"
   argument-count:
     config:
       threshold: 5
