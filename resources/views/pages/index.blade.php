@@ -4,14 +4,16 @@
 Welcome
 @endsection
 
+@section('extra_css')
+<script>window.Laravel['formAction'] = '{{ url('url-action') }}';</script>
+@endsection
+
 @section('content')
-<form method="post" action="{{url('url-action')}}">
-	{{csrf_field()}}
-	<input type="text" name="url" placeholder="http://abc.com" list='suggestion'>
-	<datalist id="suggestion">
-		<option value="black"></option>
-		<option value="blue"></option>
-	</datalist>
-	<button type="submit">Kirim</button>
-</form>
+<div id="app">	
+	<navbar></navbar>
+	<div class="container"> 
+		<urlform></urlform>
+	</div>
+	<footerpage></footerpage>
+</div>
 @endsection

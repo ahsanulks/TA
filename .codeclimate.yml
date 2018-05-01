@@ -30,3 +30,8 @@ checks:
   identical-code:
     config:
       threshold: # language-specific defaults. an override will affect all languages.
+
+# exclude
+exclude_patterns:
+- "bower_components/"
+- "public/js/vue.js"
