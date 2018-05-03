@@ -14,5 +14,6 @@
 Route::get('/', 'ParserController@index');
 Route::post('/url-action', 'ParserController@createDom');
 Route::get('/url/{id}', 'TableController@getAllUrlTable');
+Route::get('/url/{id}/tables', 'TableController@getDataAllTable');
 Route::get('/table/{id}', 'TableController@getTable');
 Route::get('/parse-sql', 'ParserController@sql_parser');
