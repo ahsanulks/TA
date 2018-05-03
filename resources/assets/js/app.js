@@ -18,6 +18,9 @@ window.Vue = require('vue');
 Vue.component('navbar', require('./components/Navbar.vue'));
 Vue.component('urlform', require('./components/UrlForm.vue'));
 Vue.component('footerpage', require('./components/FooterPage.vue'));
+Vue.component('queryform', require('./components/QueryForm.vue'));
+Vue.component('datatable', require('./components/DataTable.vue'));
+Vue.component('urlqueryform', require('./components/UrlQuery.vue'));
 
 const app = new Vue({
     el: '#app'

@@ -15,20 +15,23 @@ class TableController extends TableParserController
 {
     //
     public function getAllUrlTable($id){
-    	if (empty($id)) {
+        if (empty($id)) {
     		return Redirect::to('/');
     	}
+    	$data['id'] = $id;
+    	return view('pages.tables', $data);
+    }
+
+    public function getDataAllTable($id){
     	$tables = Url::find($id)->tables;
         if (empty($tables)) {
             return Redirect::to('/');
         }
     	foreach ($tables as $table) {
     		$data['tables'][]             = $table;
-    		$data['column'][$table->id]   = $table->columns;
+    		$data['columns'][$table->id]   = $table->columns;
     	}
-    	$data['id'] = $id;
-    	
-    	return view('pages.tables', $data);
+    	return response()->json($data);
     }
 
     public function getTable($id, Request $req){
