@@ -21,6 +21,7 @@ Vue.component('footerpage', require('./components/FooterPage.vue'));
 Vue.component('queryform', require('./components/QueryForm.vue'));
 Vue.component('datatable', require('./components/DataTable.vue'));
 Vue.component('urlqueryform', require('./components/UrlQuery.vue'));
+Vue.component('tablequery', require('./components/TableQuery.vue'));
 
 const app = new Vue({
     el: '#app'

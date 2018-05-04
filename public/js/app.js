@@ -1072,7 +1072,7 @@ module.exports = Cancel;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(11);
-module.exports = __webpack_require__(53);
+module.exports = __webpack_require__(56);
 
 
 /***/ }),
@@ -1101,7 +1101,8 @@ Vue.component('urlform', __webpack_require__(41));
 Vue.component('footerpage', __webpack_require__(44));
 Vue.component('queryform', __webpack_require__(47));
 Vue.component('datatable', __webpack_require__(50));
-Vue.component('urlqueryform', __webpack_require__(64));
+Vue.component('urlqueryform', __webpack_require__(53));
+Vue.component('tablequery', __webpack_require__(67));
 
 var app = new Vue({
   el: '#app'
@@ -43617,6 +43618,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -43626,7 +43631,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       id: window.Laravel.tableId,
       type: 'linear',
       isQuery: false,
-      urlQuery: ''
+      urlQuery: '',
+      tableResponse: '',
+      columnResponse: '',
+      lastUpdate: ''
     };
   },
 
@@ -43645,10 +43653,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         vm.$set(vm, 'urlQuery', response.data);
         vm.$set(vm, 'isQuery', true);
         axios.get(response.data).then(function (res) {
-          console.log(res);
+          vm.$set(vm, 'tableResponse', res.data.table);
+          vm.$set(vm, 'columnResponse', res.data.columns);
         });
       });
     }
+  },
+
+  mounted: function mounted() {
+    this.$nextTick(function () {
+      this.lastUpdate = this.$children[0].lastUpdate;
+    });
   }
 });
 
@@ -43754,6 +43769,10 @@ var render = function() {
               [_vm._v("Query")]
             )
           ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "card-footer text-muted" }, [
+          _vm._v("\n        Last update " + _vm._s(_vm.lastUpdate) + "\n      ")
         ])
       ]),
       _vm._v(" "),
@@ -43761,7 +43780,13 @@ var render = function() {
         ? _c("urlqueryform", { attrs: { urlQueryAccess: _vm.urlQuery } })
         : _vm._e(),
       _vm._v(" "),
-      !_vm.isQuery ? _c("datatable") : _vm._e()
+      !_vm.isQuery ? _c("datatable") : _vm._e(),
+      _vm._v(" "),
+      _vm.isQuery
+        ? _c("tablequery", {
+            attrs: { table: _vm.tableResponse, column: _vm.columnResponse }
+          })
+        : _vm._e()
     ],
     1
   )
@@ -43855,7 +43880,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     return {
       id: window.Laravel.tableId,
       tables: null,
-      columns: null
+      columns: null,
+      lastUpdate: ''
     };
   },
 
@@ -43865,6 +43891,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var vm = this;
       axios.get('/url/' + this.id + '/tables').then(function (response) {
         vm.$set(vm, 'tables', response.data.tables);
+        vm.$emit(response.data.tables[0].updated_at);
+        vm.$set(vm, 'lastUpdate', response.data.tables[0].updated_at);
         vm.$set(vm, 'columns', response.data.columns);
       });
     }
@@ -43933,30 +43961,14 @@ if (false) {
 
 /***/ }),
 /* 53 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 54 */,
-/* 55 */,
-/* 56 */,
-/* 57 */,
-/* 58 */,
-/* 59 */,
-/* 60 */,
-/* 61 */,
-/* 62 */,
-/* 63 */,
-/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 var normalizeComponent = __webpack_require__(1)
 /* script */
-var __vue_script__ = __webpack_require__(65)
+var __vue_script__ = __webpack_require__(54)
 /* template */
-var __vue_template__ = __webpack_require__(66)
+var __vue_template__ = __webpack_require__(55)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -43995,7 +44007,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 65 */
+/* 54 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -44020,7 +44032,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 66 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -44048,6 +44060,165 @@ if (false) {
     require("vue-hot-reload-api")      .rerender("data-v-3d28bae0", module.exports)
   }
 }
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 57 */,
+/* 58 */,
+/* 59 */,
+/* 60 */,
+/* 61 */,
+/* 62 */,
+/* 63 */,
+/* 64 */,
+/* 65 */,
+/* 66 */,
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(69)
+/* template */
+var __vue_template__ = __webpack_require__(68)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\TableQuery.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-d915295e", Component.options)
+  } else {
+    hotAPI.reload("data-v-d915295e", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "table-query" }, [
+    _c("div", { staticClass: "table-responsive" }, [
+      _c("table", { staticClass: "table table-striped" }, [
+        _c(
+          "caption",
+          { staticStyle: { "caption-side": "top", "text-align": "center" } },
+          [_vm._v(_vm._s(_vm.tables.name))]
+        ),
+        _vm._v(" "),
+        _c(
+          "thead",
+          { staticClass: "thead-light" },
+          _vm._l(_vm.tables.header, function(header, index) {
+            return _c("th", { key: index }, [
+              _vm._v("\n            " + _vm._s(header) + "\n          ")
+            ])
+          })
+        ),
+        _vm._v(" "),
+        _c(
+          "tbody",
+          _vm._l(_vm.columns, function(rows, index) {
+            return _c(
+              "tr",
+              { key: index },
+              _vm._l(rows, function(row, indexRow) {
+                return _c("td", { key: indexRow }, [_vm._v(_vm._s(row))])
+              })
+            )
+          })
+        )
+      ])
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-d915295e", module.exports)
+  }
+}
+
+/***/ }),
+/* 69 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['table', 'column'],
+  computed: {
+    tables: {
+      get: function get() {
+        return this.table;
+      }
+    },
+    columns: {
+      get: function get() {
+        return this.column;
+      }
+    }
+  }
+});
 
 /***/ })
 /******/ ]);

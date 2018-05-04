@@ -46,7 +46,7 @@ class ParserController extends Controller
           $data['where'] = $this->get_where($where);
         }
         $data['type'] = $req->type;
-        // return Redirect::to('/table/'.$table->id."?".http_build_query($data));
+        
         return url('/table/'.$table->id."?".http_build_query($data));
       }
       else{

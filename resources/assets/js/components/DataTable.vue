@@ -24,7 +24,8 @@ export default {
     return {
       id: window.Laravel.tableId,
       tables: null,
-      columns: null
+      columns: null,
+      lastUpdate: ''
     }
   },
 
@@ -33,12 +34,14 @@ export default {
       const vm = this;
       axios.get('/url/' + this.id +'/tables').then(function(response) {
         vm.$set(vm, 'tables', response.data.tables);
+        vm.$emit(response.data.tables[0].updated_at);
+        vm.$set(vm, 'lastUpdate', response.data.tables[0].updated_at);
         vm.$set(vm, 'columns', response.data.columns);
       });
     }
   },
 
-  created: function() {
+  created() {
     this.getData();
   }
 }
