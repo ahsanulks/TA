@@ -14,13 +14,19 @@
           <button class="btn btn-primary" @click="submitQuery">Query</button>
         </form>
       </div>
+      <div class="card-footer text-muted">
+        Last update {{ lastUpdate }}
+      </div>
     </div>
     <urlqueryform v-if="isQuery" :urlQueryAccess="urlQuery"></urlqueryform>
 		<datatable v-if="!isQuery"></datatable>
+    <tablequery v-if="isQuery" :table="tableResponse" :column="columnResponse"></tablequery>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   data() {
     return {
@@ -29,7 +35,9 @@ export default {
       id: window.Laravel.tableId,
       type: 'linear',
       isQuery: false,
-      urlQuery: ''
+      urlQuery: '',
+      tableResponse: '',
+      columnResponse: ''
     }
   },
 
@@ -47,10 +55,15 @@ export default {
         vm.$set(vm, 'urlQuery', response.data);
         vm.$set(vm, 'isQuery', true);        
         axios.get(response.data).then(function (res){
-          console.log(res);
+          vm.$set(vm, 'tableResponse', res.data.table);
+          vm.$set(vm, 'columnResponse', res.data.columns);
         });
       });
     }
-  }
+  },
+
+  computed: mapState({
+    lastUpdate: state => state.lastUpdate
+  })
 }
 </script>
