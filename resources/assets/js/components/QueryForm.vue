@@ -25,6 +25,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   data() {
     return {
@@ -35,8 +37,7 @@ export default {
       isQuery: false,
       urlQuery: '',
       tableResponse: '',
-      columnResponse: '',
-      lastUpdate: '',
+      columnResponse: ''
     }
   },
 
@@ -61,10 +62,8 @@ export default {
     }
   },
 
-  mounted() {
-    this.$nextTick(function() {
-      this.lastUpdate = this.$children[0].lastUpdate;
-    });
-  }
+  computed: mapState({
+    lastUpdate: state => state.lastUpdate
+  })
 }
 </script>

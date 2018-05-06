@@ -20,6 +20,7 @@
     "vue": "^2.1.10"
   },
   "dependencies": {
-    "npm-watch": "^0.3.0"
+    "npm-watch": "^0.3.0",
+    "vuex": "^3.0.1"
   }
 }
