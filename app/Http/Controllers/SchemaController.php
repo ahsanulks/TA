@@ -79,9 +79,9 @@ class SchemaController extends Controller
 		}
 		else{
 			$data['url_id']	= $url_id;
-			$data['name']	= $name;
+			$data['name']		= $name;
 			$data['header']	= $header;
-			$table 			= Tabel::create($data);
+			$table 					= Tabel::create($data);
 			$id = $table->id;
 		}
 		return $id;
@@ -144,9 +144,9 @@ class SchemaController extends Controller
 		$rowspan = array();
 		foreach ($datas as $data) {
 			$colspantemp[] 	= $data->getAttribute('colspan'); 
-			$colspan 		= $data->getAttribute('colspan');
-			$rowspan[]		= $data->getAttribute('rowspan');
-			$array[]		= $this->get_colspan_data($colspan, $data);
+			$colspan 				= $data->getAttribute('colspan');
+			$rowspan[]			= $data->getAttribute('rowspan');
+			$array[]				= $this->get_colspan_data($colspan, $data);
 		}
 		$uniq_rowspan = array_unique($rowspan);
 		if (sizeof($uniq_rowspan) > 1 && in_array(null, $uniq_rowspan, TRUE)) {

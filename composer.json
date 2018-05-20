@@ -20,7 +20,7 @@
     },
     "autoload": {
         "files":[
-            "app/Http/helpers.php"
+            "app/Http/Helpers.php"
         ],
         "classmap": [
             "database"
