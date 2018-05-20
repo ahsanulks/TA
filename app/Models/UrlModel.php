@@ -10,7 +10,7 @@ class UrlModel extends Eloquent
     //
     const TTL_TYPE          = ['linear', 'polynomial', 'exponential'];
     const TTL_MIN           = 1;
-    const TTL_MAX           = 7;
+    const TTL_MAX           = 8;
     const TTL_C_LINEAR      = 1/5;
     const TTL_C_POLYNOMIAL  = -1;
     const TTL_C_EXPONENTIAL = 1;
@@ -22,7 +22,7 @@ class UrlModel extends Eloquent
         'url',
         'md5',
         'ttl',
-        'string_page'
+        'string_table'
     ];
 
     public function tables(){

@@ -29,7 +29,7 @@ class TableController extends TableParserController
         }
     	foreach ($tables as $table) {
     		$data['tables'][]             = $table;
-    		$data['columns'][$table->id]   = $table->columns;
+    		$data['columns'][$table->id]  = $table->columns;
     	}
     	return response()->json($data);
     }
@@ -40,12 +40,9 @@ class TableController extends TableParserController
         $url    = $table->url;
         $ttl    = new Ttl($url->url, $req->type);
         if ($ttl->is_expired()) {
-            $schema = new Schema($url->url);
+            $schema = new Schema($url->url, $req->type);
             $schema->update_dom();
             $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
-        }
-        else{
-            $ttl->update_ttl('increment');
         }
         $headers        = $table->header;
         $table          = $this->get_table_and_header($table, $req->select);
@@ -63,7 +60,7 @@ class TableController extends TableParserController
         if ($order) { if (!$this->valid_order($order['arguments'], $header)) return 'Error'; }
         if (!$this->valid_select($select, $header)) return 'Error';
 
-        $query = Column::query()->where('tabel_id', $table_id);
+        $query      = Column::query()->where('tabel_id', $table_id);
 
         if ($order) $this->add_order($query, $order, $header);
         $result     = $this->get_body_column($query->get());
@@ -79,9 +76,9 @@ class TableController extends TableParserController
             $GLOBALS['where_condition'][]       = $this->get_condition($delimiter, $args);
             $GLOBALS['where_condition'][$key][] = trim($delimiter);
         }
-        $GLOBALS['operators'] = isset($where['operators']) ? $where['operators'] : false;
-        $results    = $this->get_column_collection($id, $header, $order);
-        $result     = $this->get_body_column($results);
+        $GLOBALS['operators']   = isset($where['operators']) ? $where['operators'] : false;
+        $results                = $this->get_column_collection($id, $header, $order);
+        $result                 = $this->get_body_column($results);
         return $selects[0] == '*' || $result == '' ? $result : $this->dynamic_select($result, $GLOBALS['selects']);
     }
 

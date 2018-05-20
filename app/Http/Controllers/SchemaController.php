@@ -15,12 +15,15 @@ class SchemaController extends Controller
 	private $dom;
 	private $temp_md5;
 	private $not_have_thead;
+	private $type;
 
-	public function __construct($url) {
-		$this->url = Url::firstOrNew(['url' => $url]);
-		$this->dom = new Dom();
-		$this->url->string_page = $this->dom->loadFromUrl($this->url->url)->outerHTML;
-		$this->temp_md5 = md5($this->url->string_page);
+	public function __construct($url, $type = '') {
+		$this->url 					= Url::firstOrNew(['url' => $url]);
+		$this->dom 					= new Dom();
+		$this->dom->loadFromUrl($this->url->url)->outerHTML;
+		$this->url->string_table 	= (string) $this->dom->find('table');
+		$this->temp_md5 			= md5($this->url->string_table);
+		$this->type					= $type;
 	}
 
 	public function create_dom(){
@@ -31,7 +34,7 @@ class SchemaController extends Controller
 	}
 
 	public function update_dom(){
-		$ttl = new Ttl($this->url->url);
+		$ttl = new Ttl($this->url->url, $this->type);
 		if ($this->is_new()) {
 			$this->url->md5 = $this->temp_md5;
 			$ttl->update_ttl('lowest');
@@ -82,7 +85,7 @@ class SchemaController extends Controller
 			$data['name']	= $name;
 			$data['header']	= $header;
 			$table 			= Tabel::create($data);
-			$id = $table->id;
+			$id 			= $table->id;
 		}
 		return $id;
 	}
@@ -132,8 +135,8 @@ class SchemaController extends Controller
 			$th 					= $this->get_data_table($row, 'th');
 		}
 		else {
-			$row 	= $thead->find('tr');
-			$th 	= sizeof($row) == 0 ? $this->get_data_table($thead, 'th') : $this->get_data_table($row, 'th');
+			$row = $thead->find('tr');
+			$th  = sizeof($row) == 0 ? $this->get_data_table($thead, 'th') : $this->get_data_table($row, 'th');
 		}
 		return $th;
 	}
