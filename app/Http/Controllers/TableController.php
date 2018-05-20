@@ -40,12 +40,9 @@ class TableController extends TableParserController
         $url    = $table->url;
         $ttl    = new Ttl($url->url, $req->type);
         if ($ttl->is_expired()) {
-            $schema = new Schema($url->url);
+            $schema = new Schema($url->url, $req->type);
             $schema->update_dom();
             $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
-        }
-        else{
-            $ttl->update_ttl('increment');
         }
         $headers        = $table->header;
         $table          = $this->get_table_and_header($table, $req->select);

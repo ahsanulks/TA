@@ -22,7 +22,7 @@ class TtlController extends Controller
 	public function is_expired(){
 		date_default_timezone_set('Asia/Jakarta');
 		$date 		= date('Y-m-d H:i:s', time());
-		$expired 	= $this->convert_ttl($this->url->ttl, $this->url->updated_at);
+		$expired 	= $this->convert_ttl($this->url->ttl - 1, $this->url->updated_at);
 		return $date > $expired ? true : false;
 	}
 
