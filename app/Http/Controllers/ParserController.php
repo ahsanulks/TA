@@ -21,7 +21,7 @@ class ParserController extends Controller
     }
 
     public function createDom(Request $req){
-      $url    = str_replace('https', 'http', $req->url);
+      $url    = str_replace('https://', 'http://', $req->url);
       $schema = new Schema($url);
       if ($schema->is_new()) $schema->create_dom();
       $url_id = $schema->get_url_id();
