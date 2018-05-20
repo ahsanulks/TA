@@ -18,12 +18,12 @@ class SchemaController extends Controller
 	private $type;
 
 	public function __construct($url, $type = '') {
-		$this->url 								= Url::firstOrNew(['url' => $url]);
-		$this->dom	 							= new Dom();
+		$this->url 					= Url::firstOrNew(['url' => $url]);
+		$this->dom	 				= new Dom();
 		$this->dom->loadFromUrl($this->url->url)->outerHTML;
 		$this->url->string_table	= (string) $this->dom->find('table');
-		$this->temp_md5 					= md5($this->url->string_table);
-		$this->type								= $type;
+		$this->temp_md5 			= md5($this->url->string_table);
+		$this->type					= $type;
 	}
 
 	public function create_dom(){
@@ -82,10 +82,10 @@ class SchemaController extends Controller
 		}
 		else{
 			$data['url_id']	= $url_id;
-			$data['name']		= $name;
+			$data['name']	= $name;
 			$data['header']	= $header;
-			$table 					= Tabel::create($data);
-			$id = $table->id;
+			$table 			= Tabel::create($data);
+			$id 			= $table->id;
 		}
 		return $id;
 	}
@@ -135,8 +135,8 @@ class SchemaController extends Controller
 			$th 					= $this->get_data_table($row, 'th');
 		}
 		else {
-			$row 	= $thead->find('tr');
-			$th 	= sizeof($row) == 0 ? $this->get_data_table($thead, 'th') : $this->get_data_table($row, 'th');
+			$row = $thead->find('tr');
+			$th  = sizeof($row) == 0 ? $this->get_data_table($thead, 'th') : $this->get_data_table($row, 'th');
 		}
 		return $th;
 	}
@@ -147,9 +147,9 @@ class SchemaController extends Controller
 		$rowspan = array();
 		foreach ($datas as $data) {
 			$colspantemp[] 	= $data->getAttribute('colspan'); 
-			$colspan 				= $data->getAttribute('colspan');
-			$rowspan[]			= $data->getAttribute('rowspan');
-			$array[]				= $this->get_colspan_data($colspan, $data);
+			$colspan 		= $data->getAttribute('colspan');
+			$rowspan[]		= $data->getAttribute('rowspan');
+			$array[]		= $this->get_colspan_data($colspan, $data);
 		}
 		$uniq_rowspan = array_unique($rowspan);
 		if (sizeof($uniq_rowspan) > 1 && in_array(null, $uniq_rowspan, TRUE)) {

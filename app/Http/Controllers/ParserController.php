@@ -32,14 +32,14 @@ class ParserController extends Controller
       $parser = new Parser($query);
       $flags = Query::getFlags($parser->statements[0]);
       if ($flags['querytype'] == 'SELECT') {
-        $from = strtolower($parser->statements[0]->from[0]->table);
+        $from       = strtolower($parser->statements[0]->from[0]->table);
         $expression = $parser->statements[0]->expr;
-        $table = Url::find($req->id)->tables->where('name',$from)->first();
+        $table      = Url::find($req->id)->tables->where('name',$from)->first();
         foreach ($expression as $column) {
           $select[] = $column->expr;
         }
         $data['select'] = $select;
-        $data['from'] = $from;
+        $data['from']   = $from;
         if($parser->statements[0]->order) $data['order'] = $this->get_order($parser->statements[0]->order);
         $where = $parser->statements[0]->where;
         if ($where != null) {
@@ -57,10 +57,10 @@ class ParserController extends Controller
     public function get_where($where){
       foreach ($where as $w) {
         if ($w->isOperator) {
-          $data['operators'][] = $w->expr;
+          $data['operators'][]  = $w->expr;
         }
         else{
-          $data['arguments'][] = $w->expr;
+          $data['arguments'][]  = $w->expr;
           $data['identifier'][] = $w->identifiers[0];
         }
       }
@@ -69,8 +69,8 @@ class ParserController extends Controller
 
     public function get_order($order){
       foreach ($order as $key => $order) {
-        $data['arguments'][] = $order->expr->expr;
-        $data['type'][] = $order->type;
+        $data['arguments'][]  = $order->expr->expr;
+        $data['type'][]       = $order->type;
       }
       return $data;
     }
