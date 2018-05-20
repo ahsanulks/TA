@@ -19,9 +19,9 @@ class SchemaController extends Controller
 
 	public function __construct($url, $type = '') {
 		$this->url 					= Url::firstOrNew(['url' => $url]);
-		$this->dom	 				= new Dom();
+		$this->dom 					= new Dom();
 		$this->dom->loadFromUrl($this->url->url)->outerHTML;
-		$this->url->string_table	= (string) $this->dom->find('table');
+		$this->url->string_table 	= (string) $this->dom->find('table');
 		$this->temp_md5 			= md5($this->url->string_table);
 		$this->type					= $type;
 	}
