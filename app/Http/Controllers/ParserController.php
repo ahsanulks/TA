@@ -34,27 +34,25 @@ class ParserController extends Controller
       $query  = $req->sql;
       $parser = new Parser($query);
       $flags  = Query::getFlags($parser->statements[0]);
-      if ($flags['querytype'] == 'SELECT') {
-        $from       = strtolower($parser->statements[0]->from[0]->table);
-        $expression = $parser->statements[0]->expr;
-        $table      = Url::find($req->id)->tables->where('name',$from)->first();
-        foreach ($expression as $column) {
-          $select[] = $column->expr;
-        }
-        $data['select'] = $select;
-        $data['from']   = $from;
-        if($parser->statements[0]->order) $data['order'] = $this->get_order($parser->statements[0]->order);
-        $where = $parser->statements[0]->where;
-        if ($where != null) {
-          $data['where'] = $this->get_where($where);
-        }
-        $data['type'] = $req->type;
-        
-        return url('/table/'.$table->id."?".http_build_query($data));
+      if($flags['querytype'] != 'SELECT') return "Query Denied";
+      if(empty($parser->statements[0]->from)) return "Error On Query Structure"; 
+      $from       = strtolower($parser->statements[0]->from[0]->table);
+      $expression = $parser->statements[0]->expr;
+      $table      = Url::find($req->id)->tables->where('name',$from)->first();
+      if(is_null($table)) return "Table Not Found";
+      foreach ($expression as $column) {
+        $select[] = $column->expr;
       }
-      else{
-        echo "query denied";
+      $data['select'] = $select;
+      $data['from']   = $from;
+      if($parser->statements[0]->order) $data['order'] = $this->get_order($parser->statements[0]->order);
+      $where = $parser->statements[0]->where;
+      if ($where != null) {
+        $data['where'] = $this->get_where($where);
       }
+      $data['type'] = $req->type;
+      
+      return url('/table/'.$table->id."?".http_build_query($data));
     }
 
     public function get_where($where){
