@@ -1,5 +1,5 @@
 <template>
-  <div class="card mb-3 mt-3">
+  <div class="card mb-3 mt-3 col-md-12">
     <div class="card-body">
       <h4 class="card-title">{{ title }}</h4>
       <form ref="form" :action="url.formAction" method="post">

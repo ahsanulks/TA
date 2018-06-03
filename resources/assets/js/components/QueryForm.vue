@@ -1,5 +1,5 @@
 <template>
-  <div class="query-form">
+  <div class="query-form col-md-12">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">{{ title }}</h4>

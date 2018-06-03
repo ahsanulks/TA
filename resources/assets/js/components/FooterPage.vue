@@ -1,5 +1,5 @@
 <template>
-  <footer id="footer" class="text-muted" :style="{ marginTop: mgtop + 'em' }">
+  <footer id="footer" class="text-muted col-md-12" :style="{ marginTop: mgtop + 'em' }">
     <div class="container">
       <p class="float-right">
         <a href="#app">Back to top</a>
