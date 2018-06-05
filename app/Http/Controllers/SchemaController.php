@@ -21,12 +21,13 @@ class SchemaController extends Controller
 		$this->url 					= Url::firstOrNew(['url' => $url]);
 		$this->dom 					= new Dom();
 		$this->dom->loadFromUrl($this->url->url)->outerHTML;
-		$this->url->string_table 	= (string) $this->dom->find('table');
+		$this->url->string_table 	= is_null($this->dom->find('table',0)) ? false : (string) $this->dom->find('table');
 		$this->temp_md5 			= md5($this->url->string_table);
 		$this->type					= $type;
 	}
 
 	public function create_dom(){
+        if(!$this->url->string_table) return false;
 		$this->url->md5 = $this->temp_md5;
 		$this->url->ttl = Url::TTL_MIN;
 		$this->url->save();
