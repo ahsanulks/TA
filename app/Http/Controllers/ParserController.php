@@ -61,7 +61,8 @@ class ParserController extends Controller
           $data['operators'][]  = $w->expr;
         }
         else{
-          $data['arguments'][]  = str_replace('\'', '', $w->expr);
+          $replace              = ['\'', '"'];
+          $data['arguments'][]  = str_replace($replace, '', $w->expr);
           $data['identifier'][] = $w->identifiers[0];
         }
       }

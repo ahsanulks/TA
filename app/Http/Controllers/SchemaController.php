@@ -31,7 +31,8 @@ class SchemaController extends Controller
 		$this->url->md5 = $this->temp_md5;
 		$this->url->ttl = Url::TTL_MIN;
 		$this->url->save();
-		$this->schema_definition();
+        $this->schema_definition();
+        return true;
 	}
 
 	public function update_dom(){
@@ -58,9 +59,10 @@ class SchemaController extends Controller
 
 	private function to_lower_and_underscore($array){
 		$func = function($value){
-                    return strtolower(str_replace(' ', '_', $value));
+                    $replace = [' ', '.', ',', '/', '\\', '"', '\'', '$', '&', '?', '(', ')', '%', 'amp;'];
+                    return strtolower(str_replace($replace, '_', $value));
                 };
-		return array_map($func, $array);
+		return preg_replace("/(_)\\1+/", "$1", array_map($func, $array));
 	}
 
 	private function schema_definition(){
@@ -172,11 +174,11 @@ class SchemaController extends Controller
 
 	private function get_colspan_data($colspan, $column){
 		if ($colspan != null && $colspan > 1) {
-    		$temp 	= fix_numeric_data(strip_tags($column->innerHtml));
+    		$temp = fix_numeric_data(trim(strip_tags($column->innerHtml)));
     		$data = $this->copy_data($temp, $colspan);
     	}
     	else{
-    		$data = fix_numeric_data(strip_tags($column->innerHtml));
+    		$data = fix_numeric_data(trim(strip_tags($column->innerHtml)));
     	}
     	return $data;
 	}
