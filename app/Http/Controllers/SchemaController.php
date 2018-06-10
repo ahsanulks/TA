@@ -7,6 +7,8 @@ use PHPHtmlParser\Dom;
 use App\Models\UrlModel as Url;
 use App\Models\TabelModel as Tabel;
 use App\Models\Column;
+use App\Models\Tracker\Expired;
+use App\Models\Tracker\Compare;
 use App\Http\Controllers\TtlController as Ttl;
 
 class SchemaController extends Controller
@@ -23,7 +25,8 @@ class SchemaController extends Controller
 		$this->dom->loadFromUrl($this->url->url)->outerHTML;
 		$this->url->string_table 	= is_null($this->dom->find('table',0)) ? false : (string) $this->dom->find('table');
 		$this->temp_md5 			= md5($this->url->string_table);
-		$this->type					= $type;
+        $this->type					= $type;
+        if(!is_null($this->url->id)) $this->compare();
 	}
 
 	public function create_dom(){
@@ -46,7 +49,8 @@ class SchemaController extends Controller
 		else{
 			$ttl->update_ttl('increment');
 			$this->url->save();
-		}
+        }
+        $this->expired();
 	}
 
 	public function is_new(){
@@ -192,5 +196,24 @@ class SchemaController extends Controller
 
     private function delete_column($table_id){
         Column::where('tabel_id', $table_id)->delete();
+    }
+
+    private function compare(){
+        $data = array(
+            'url_id'        => $this->url->id,
+            'ttl_type'      => $this->type,
+            'different_md5' => [$this->url->md5, $this->temp_md5],
+            'is_same'       => !$this->is_new()
+        );
+        Compare::create($data);
+    }
+
+    private function expired($count = 1){
+        $data = array(
+            'url_id'    => $this->url->id,
+            'ttl_type'  => $this->type,
+            'count'     => $count
+        );
+        Expired::create($data);
     }
 }

@@ -13,7 +13,6 @@ use App\Http\Controllers\SchemaController as Schema;
 
 class TableController extends TableParserController
 {
-    //
     public function getAllUrlTable($id){
         if (empty($id)) {
     		return Redirect::to('/');
@@ -39,8 +38,8 @@ class TableController extends TableParserController
         $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
         $url    = $table->url;
         $ttl    = new Ttl($url->url, $req->type);
+        $schema = new Schema($url->url, $req->type);
         if ($ttl->is_expired()) {
-            $schema = new Schema($url->url, $req->type);
             $schema->update_dom();
             $table  = Table::select('name', 'header', 'url_id')->where('_id', $id)->first();
         }
