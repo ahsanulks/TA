@@ -9,7 +9,7 @@
           <select v-model="type" name="type" class="form-control mb-2">
             <option value="linear">Linear</option>
             <option value="polynomial">Polynomial</option>
-            <option value="exponensial">Exponensial</option>
+            <option value="exponential">Exponential</option>
           </select>
           <button class="btn btn-primary" @click="submitQuery">Query</button>
         </form>

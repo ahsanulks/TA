@@ -47,7 +47,7 @@ class TtlController extends Controller
 
 	private function convert_ttl($ttl, $updated_at){
 		$temp 		= explode('.', $ttl);
-		$hour 		= isset($temp[1]) ? ('0.'.$temp[1]) * 60 : 0;
+		$hour 		= isset($temp[1]) ? ('0.'.$temp[1]) * 24 : 0;
 		$temp2 		= explode('.', $hour);
 		$minutes 	= isset($temp2[1]) ? ('0.'.$temp2[1]) * 60 : 0;
 		
