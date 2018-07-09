@@ -3,7 +3,7 @@
     <div class="card-body">
       <h4 class="card-title">{{ title }}</h4>
       <form ref="form" :action="url.formAction" method="post">
-        	<input type="text" name="url" v-model="url.name" class="form-control mb-2" placeholder="http://www.abcd.com">
+        	<input type="text" name="url" v-model="url.name" class="form-control mb-2" placeholder="http://www.abcd.com" required>
 					<input type="hidden" name="_token" v-model="url.csrfToken">
 					<button class="btn btn-primary" @click="submitForm">
 						Submit

@@ -44349,7 +44349,8 @@ var render = function() {
             attrs: {
               type: "text",
               name: "url",
-              placeholder: "http://www.abcd.com"
+              placeholder: "http://www.abcd.com",
+              required: ""
             },
             domProps: { value: _vm.url.name },
             on: {
@@ -44736,8 +44737,8 @@ var render = function() {
                   _vm._v("Polynomial")
                 ]),
                 _vm._v(" "),
-                _c("option", { attrs: { value: "exponensial" } }, [
-                  _vm._v("Exponensial")
+                _c("option", { attrs: { value: "exponential" } }, [
+                  _vm._v("Exponential")
                 ])
               ]
             ),
