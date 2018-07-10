@@ -4,13 +4,17 @@ import Vuex from 'vuex';
 Vue.use(Vuex);
 
 const state = {
-  lastUpdate: ''
+  lastUpdate: '',
+  columns: []
 }
 const getters = {
 }
 const mutations = {
   lastUpdated(state, value) {
     state.lastUpdate = value;
+  },
+  columns(state, value) {
+    state.columns = value;
   }
 }
 const actions = {

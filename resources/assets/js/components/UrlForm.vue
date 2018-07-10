@@ -17,7 +17,7 @@
 export default {
   data() {
     return {
-      title: 'GET YOUR URL HERE!!',
+      title: 'PLACE YOUR URL HERE!!',
       url: {
         name: '',
         csrfToken: window.Laravel.csrfToken,

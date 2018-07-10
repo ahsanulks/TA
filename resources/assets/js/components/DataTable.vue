@@ -34,6 +34,7 @@ export default {
       const vm = this;
       axios.get('/url/' + this.id +'/tables').then(function(response) {
         vm.$store.commit('lastUpdated', response.data.tables[0].updated_at);
+        vm.$store.commit('columns', response.data.tables);
         vm.$set(vm, 'tables', response.data.tables);
         vm.$set(vm, 'lastUpdate', response.data.tables[0].updated_at);
         vm.$set(vm, 'columns', response.data.columns);
