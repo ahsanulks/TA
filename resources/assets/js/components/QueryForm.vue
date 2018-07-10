@@ -89,15 +89,15 @@ export default {
     },
 
     addValue(value){
-      this.query += value;
+      this.query += value + ' ';
     },
 
     addColumn(){
-      this.query += this.columns;
+      this.query += this.columns + ' ';
     },
 
     addTable(){
-      this.query += this.tables;
+      this.query += this.tables + ' ';
     },
 
     onlyUnique(value, index, self){

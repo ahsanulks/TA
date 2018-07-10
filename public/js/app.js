@@ -75681,13 +75681,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       });
     },
     addValue: function addValue(value) {
-      this.query += value;
+      this.query += value + ' ';
     },
     addColumn: function addColumn() {
-      this.query += this.columns;
+      this.query += this.columns + ' ';
     },
     addTable: function addTable() {
-      this.query += this.tables;
+      this.query += this.tables + ' ';
     },
     onlyUnique: function onlyUnique(value, index, self) {
       return self.indexOf(value) === index;
